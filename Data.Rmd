@@ -1,0 +1,420 @@
+---
+title: "Data"
+output: 
+  html_document:
+    theme: flatly
+    toc: true
+    code_folding: hide
+    toc_float: true
+---
+
+```{r, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(readr)
+library(janitor)
+library(dplyr)
+library(ggplot2)
+library(readxl)
+library(sf)
+library(spdep)
+library(tigris)
+library(lubridate)
+```
+
+For **all** 3 datasets, only records with ZIP codes 10001–11697 were included (notice that NYC zip codes are not cumulative so only zipcodes in this range+belong to NYC). For **Rat Sighting** and **NYC Restaurant Inspection Result** datasets, records with dates between 2019-01-01 and 2024-12-31 were included. 
+```{r,message=FALSE, warning = FALSE}
+
+rats_clean_2019_2024 = read_csv("data/Rat_Sightings_20251106.csv", na = c("NA", "", "0")) |>
+  janitor::clean_names() |>
+  # covert datetime to example: "2024-12-31 18:15:58"
+  mutate(
+    created_datetime = parse_date_time(
+      created_date,
+      orders = "Y b d I:M:S p",
+      tz = "America/New_York"
+    ),
+    created_date_only = as.Date(created_datetime)
+  ) |>
+  # filter: 2019–2024 and zipcodes 10001-11697
+  filter(
+    !is.na(created_datetime),
+    created_date_only >= as.Date("2019-01-01"),
+    created_date_only <= as.Date("2024-12-31")
+  ) |>
+  mutate(
+    incident_zip = incident_zip |>
+      as.character() |>
+      str_extract("\\d+") |>
+      str_pad(width = 5, side = "left", pad = "0")
+  ) |>
+  filter(
+    incident_zip >= "10001",
+    incident_zip <= "11697"
+  ) |>
+  select(
+    any_of(c(
+      "unique_key", 
+      "created_date_only",
+      "complaint_type", #delete
+      "descriptor", #delete
+      "status", #delete
+      "resolution_action_updated_date", #delete
+      "location_type", #delete
+      "incident_zip",
+      "incident_address", #delete
+      "street_name", #delete
+      "cross_street_1", #delete
+      "cross_street_2", #delete
+      "city", 
+      "borough",
+      "latitude",
+      "longitude",
+      "community_board", #delete
+      "council_district", #delete
+      "census_tract", #delete
+      "nta" #delete
+    ))
+  ) |>
+  #keep for spatial analysis
+  filter(
+    !is.na(incident_zip),
+    !is.na(latitude),
+    !is.na(longitude)
+  ) |>
+  mutate(
+    zipcode=incident_zip,
+    year=year(created_date_only),
+    month=month(created_date_only)
+  )
+rats_clean_2019_2024
+```
+### Data Source 1
+
+**[Rat Sighting](https://data.cityofnewyork.us/Social-Services/Rat-Sightings/3q43-55fe/about_data)**: Each row represents one rat sighting report based on the [311 Service Requests](https://data.cityofnewyork.us/Social-Services/311-Service-Requests-from-2010-to-Present/erm2-nwe9/about_data), including location (ZIP, address, borough, latitude/longitude).
+
+/
+After cleaning, key variables to include in **Rat Sighting**:
+
+`unique_key`: unique ID represents a single rat sighting report.
+
+`created_datetime`: datetime of the complaint created.
+
+`created_date_only`: date of the complaint created without exact time.
+
+`incident_zip`: zip codes of the rat sighting complaints.
+
+`latitude`: the latitude of the specific rat sighting.
+
+`longitude`: the longitude of the specific rat sighting.
+/
+
+**Aggregate Rat Sighting by zip x year x month**
+```{r}
+rat_agg_zip_month_full <- rats_clean_2019_2024 |>
+  group_by(zipcode, year, month) |>
+  summarize(
+    rat_count_zip_month = n_distinct(unique_key),
+    .groups = "drop"
+  ) |>
+  complete(
+    zipcode,
+    year,
+    month,
+    fill = list(rat_count_zip_month = 0)
+  )
+rat_agg_zip_month_full
+```
+
+
+```{r,message=FALSE, warning = FALSE}
+inspections_clean <- read_csv(
+  "data/DOHMH_New_York_City_Restaurant_Inspection_Results.csv",
+  na = c("NA", "", "0")
+) |>
+  clean_names() |>
+  remove_empty(c("rows", "cols")) |>
+  
+  # Standardize ZIP and Dates
+  mutate(
+    zipcode = zipcode |>
+      as.character() |>
+      str_extract("\\d{5}") |>   # ensure 5-digit format
+      str_pad(width = 5, pad = "0"),
+    date = mdy(inspection_date)
+  ) |>
+  
+  # Filter valid records
+  filter(
+    !is.na(date),
+    date >= as.Date("2019-01-01"),
+    date <= as.Date("2024-12-31"),
+
+    !is.na(zipcode),
+    zipcode >= "10001",
+    zipcode <= "11697",
+
+    !is.na(latitude),
+    !is.na(longitude),
+    !is.na(boro),
+    !is.na(violation_code)   # keep only violation records
+  ) |>
+  
+  # Select necessary variables
+  select(
+    restaurant_id = camis,
+    dba,
+    borough = boro,
+    zipcode,
+    cuisine_description,
+    date,
+    action,
+    violation_code, violation_description, critical_flag,
+    score, grade, grade_date, record_date,
+    inspection_type,
+    latitude, longitude
+  ) |>
+  
+  # Add Year and Month
+  mutate(
+    year = year(date),
+    month = month(date)
+  )
+inspections_clean
+
+```
+
+### Data Source 2
+
+**[NYC Restaurant Inspection Result](https://data.cityofnewyork.us/Health/DOHMH-New-York-City-Restaurant-Inspection-Results/43nn-pn8j/about_data)**: The dataset includes all recorded violation citations for active restaurants; inspections with “No violations at the time of inspection” were excluded.
+
+After cleaning, key variables to include in **NYC Restaurant Inspection Result**:
+
+`camis`: unique ID of each restaurants.
+
+`dba`: names of restaurants.
+
+`boro`: boroughs.
+
+`zipcode`: zip codes of restaurants.
+
+`cuisine_description`: cuisine types.
+
+`inspection_date`: the dates that the restaurants been inspected.
+
+`violation_code`: the types of violations.
+
+`latitude`: the latitude of the restaurants.
+
+`longitude`: the longitude of the restaurants.
+
+**Aggregate NYC Restaurant Inspection Results by zip x year x month**
+```{r}
+restaurant_agg_zip_month_full <- inspections_clean |>
+  group_by(zipcode, year, month) |>
+  summarise(
+    violation_count_zip_month = n(),
+    inspection_count_zip_month = n_distinct(restaurant_id, date),
+    .groups = "drop"
+  ) |>
+ complete(
+    zipcode,
+    year  = 2019:2024,
+    month = 1:12,
+    fill = list(
+      violation_count_zip_month   = 0,
+      inspection_count_zip_month = 0
+    )
+  )
+restaurant_agg_zip_month_full
+```
+
+```{r,message=FALSE, warning = FALSE}
+library(tidycensus)
+library(tidyverse)
+
+acs_zip_raw <- get_acs(
+  geography = "zip code tabulation area",
+  variables = c(
+    total_pop   = "B01003_001",
+    pov_total   = "B17001_001",
+    pov_count   = "B17001_002",
+    med_income  = "B19013_001"
+  ),
+  year   = 2019,
+  survey = "acs5",
+  geometry = FALSE
+)
+
+ses_zip <- acs_zip_raw %>%
+  select(GEOID, variable, estimate) %>%
+  pivot_wider(
+    names_from  = variable,
+    values_from = estimate
+  ) %>%
+  mutate(
+    zip = GEOID,
+    poverty_rate = pov_count / pov_total,
+    population_density = total_pop / 1000,
+    median_household_income = med_income / 1000
+  )
+
+ses_zip_nyc <- ses_zip %>%
+  mutate(zip_num = as.numeric(zip)) %>%
+  filter(
+    !is.na(zip_num),
+    zip_num >= 10001,
+    zip_num <= 11697,
+    total_pop > 0,
+    pov_total > 0
+  ) %>%
+  select(
+    zipcode  = zip_num,
+    total_pop,
+    poverty_rate,
+    population_density,
+    median_household_income
+  )
+ses_zip_nyc
+```
+
+### Data Source 3
+
+**ACS 2019 5-year estimates**: Area-level socioeconomic indicators were obtained from the 2015–2019 ACS 5-year estimates at the ZIP Code Tabulation Area (ZCTA) level using _tidycensus_ in R. *Notice: We selected the 2015–2019 estimates because the 2019–2023 ACS data were affected by COVID-19-related disruptions and contained substantial missingness, while SES indicators remain relatively stable over time.
+
+After cleaning and necessary calculations, key variables to include and created in **ACS 2019 5-year estimates**:
+
+`zipcode`: zipcodes of the NYC.
+
+`total_pop`: total population of the specific zipcode.
+
+`poverty_rate`: poverty rate of the zipcodes, specifically calculated from poverty population count / poverty population in total.
+
+`population_density`: population density of the zipcodes, specifically calculated from total population of the zipcode / 1000.
+
+`median_household_income`: median household income of the zipcodes, specifically calculated from median household income of the zipcode / 1000.
+
+## Merge 3 datasets by zipcode x year x month
+
+```{r}
+rat_fixed <- rat_agg_zip_month_full |>
+  mutate(zipcode = as.character(zipcode))
+
+restaurant_fixed <- restaurant_agg_zip_month_full |>
+  mutate(zipcode = as.character(zipcode))
+
+ses_fixed <- ses_zip_nyc |>
+  mutate(zipcode = as.character(zipcode))
+```
+
+```{r}
+common_zips <- Reduce(
+  intersect,
+  list(
+    rat_fixed$zipcode,
+    restaurant_fixed$zipcode,
+    ses_fixed$zipcode
+  )
+)
+common_zips
+```
+
+```{r}
+rat_filtered <- rat_fixed |>
+  filter(zipcode %in% common_zips)
+
+restaurant_filtered <- restaurant_fixed |>
+  filter(zipcode %in% common_zips)
+
+ses_filtered <- ses_fixed |>
+  filter(zipcode %in% common_zips)
+```
+
+```{r}
+df_merged <- rat_filtered |>
+  inner_join(restaurant_filtered,
+             by = c("zipcode", "year", "month")) |>
+  inner_join(ses_filtered,
+             by = "zipcode")
+```
+### Export
+```{r}
+write_csv(df_merged, "./data/zip_year_month_merged.csv")
+```
+
+```{r}
+library(dplyr)
+
+df_model <- df_merged |>
+  # 1️⃣ 计算 violation_rate
+  mutate(
+    violation_rate = violation_count_zip_month / inspection_count_zip_month,
+    violation_rate = ifelse(is.na(violation_rate) |
+                            inspection_count_zip_month == 0, 0, violation_rate)
+  ) |>
+
+  # 2️⃣ 生成 1-month lag exposure
+  group_by(zipcode) |>
+  arrange(zipcode, year, month) |>
+  mutate(
+    lag_violation_rate = lag(violation_rate, 1)
+  ) |>
+  ungroup() |>
+
+  # 3️⃣ 删除 lag 产生的 NA 行（每个 zipcode 第一个月）
+  filter(!is.na(lag_violation_rate))
+
+df_model
+
+
+```
+```{r}
+library(MASS)
+
+model1 <- glm.nb(
+  rat_count_zip_month ~ 
+    violation_rate,
+  data = df_model)
+summary(model1)
+  
+  
+model2 <- glm.nb(
+  rat_count_zip_month ~ 
+    violation_rate+
+    population_density +
+    poverty_rate,
+  data = df_model)
+summary(model2)
+
+model3 <- glm.nb(
+  rat_count_zip_month ~ 
+    violation_rate+
+    population_density +
+    poverty_rate+
+    factor(year) +
+    factor(month),
+  data = df_model)
+summary(model3)
+
+nb_model_lag <- glm.nb(
+  rat_count_zip_month ~ 
+    lag_violation_rate +
+    population_density +
+    poverty_rate +
+    factor(year) +
+    factor(month),
+  data = df_model
+)
+
+summary(nb_model_lag)
+exp(coefficients(nb_model_lag))
+
+```
+
+```{r}
+m1 <- MASS::glm.nb(
+  rat_count_zip_month ~ violation_rate,
+  data = df_model
+)
+summary(m1)
+```
+
