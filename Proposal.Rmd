@@ -1,4 +1,5 @@
 ---
+title: "Proposal"
 output: 
   html_document:
     theme: flatly
@@ -151,5 +152,5 @@ November 24-28: Finalize all analysis and start drafting the report.
 November 29 - December 3: Complete the draft report and finalize all visualization parts.
 December 3-6: Finalize and submit.
 
-
+</div>
 
