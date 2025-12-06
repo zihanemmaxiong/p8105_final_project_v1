@@ -665,7 +665,7 @@ Population density is the SES indicator most strongly associated with the violat
 ## SES Predictors That Truly Matter
 This exploratory analysis demonstrates that poverty rate and population density are the two socioeconomic indicators most strongly and consistently associated with both monthly rat sighting counts and the violation rate per restaurant inspection across New York City ZIP codes from 2019 to 2024. ZIP codes with higher poverty or greater population density tend to exhibit more rat activity and higher restaurant violation burdens, highlighting these SES factors as important structural characteristics relevant to environmental conditions and sanitation outcomes.
 
-Given their clear relationships with both the outcome and exposure, and their conceptual relevance as neighborhood-level socioeconomic determinants, poverty rate and population density should be included as key covariates in the final regression model. In contrast, median household income should not be included jointly with poverty rate, as the two measures are strongly negatively correlated and would likely introduce multicollinearity, reducing the stability and interpretability of model estimates.
+Given their clear relationships with both the outcome and exposure, and their conceptual relevance as neighborhood-level socioeconomic determinants, poverty rate and population density should be included as key covariates in the final regression model. In contrast, median household income should not be included jointly with poverty rate, as the two measures are strongly negatively correlated and would likely introduce multi-collinearity, reducing the stability and interpretability of model estimates. 
 
 </div>
 
