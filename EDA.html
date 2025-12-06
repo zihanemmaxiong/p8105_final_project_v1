@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Analysis</title>
+
+<script src="site_libs/header-attrs-2.29/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-6.5.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html"></a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="proposal.html">Proposal</a>
+</li>
+<li>
+  <a href="report.html">Report</a>
+</li>
+<li>
+  <a href="introduction.html">Introduction</a>
+</li>
+<li>
+  <a href="data.html">Data</a>
+</li>
+<li>
+  <a href="eda.html">EDA</a>
+</li>
+<li>
+  <a href="analysis.html">Modelling</a>
+</li>
+<li>
+  <a href="discussion.html">Discussion</a>
+</li>
+<li>
+  <a href="appendix.html">Appendix</a>
+</li>
+<li>
+  <a>
+    <span class="fa fa-play-circle fa-lg"></span>
+     
+  </a>
+</li>
+<li>
+  <a href="mailto:&lt;zx2527@cumc.columbia.edu&gt;">
+    <span class="fa fa-envelope fa-lg"></span>
+     
+  </a>
+</li>
+<li>
+  <a href="https://github.com/zihanemmaxiong/p8105_final_project/tree/main">
+    <span class="fa fa-github fa-lg"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Analysis</h1>
+
+</div>
+
+
+<hr />
+<div id="第-2-步读入-data.rmd-导出的合并数据" class="section level2">
+<h2>第 2 步：读入 Data.Rmd 导出的合并数据</h2>
+<p>在 “5. 空间分析” 下面加一个 chunk，读取你在 Data.Rmd 中导出的
+<code>zip_year_month_merged.csv</code>：</p>
+<pre class="r"><code>df_merged &lt;- readr::read_csv(&quot;data/zip_year_month_merged.csv&quot;) |&gt;
+  janitor::clean_names() |&gt;
+  dplyr::mutate(zipcode = as.character(zipcode))
+
+glimpse(df_merged)</code></pre>
+<pre><code>## Rows: 12,960
+## Columns: 10
+## $ zipcode                    &lt;chr&gt; &quot;10001&quot;, &quot;10001&quot;, &quot;10001&quot;, &quot;10001&quot;, &quot;10001&quot;…
+## $ year                       &lt;dbl&gt; 2019, 2019, 2019, 2019, 2019, 2019, 2019, 2…
+## $ month                      &lt;dbl&gt; 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 1, 2…
+## $ rat_count_zip_month        &lt;dbl&gt; 2, 2, 6, 9, 5, 2, 4, 8, 4, 5, 1, 2, 2, 2, 3…
+## $ violation_count_zip_month  &lt;dbl&gt; 0, 0, 0, 2, 5, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0…
+## $ inspection_count_zip_month &lt;dbl&gt; 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0…
+## $ total_pop                  &lt;dbl&gt; 24117, 24117, 24117, 24117, 24117, 24117, 2…
+## $ poverty_rate               &lt;dbl&gt; 0.1305832, 0.1305832, 0.1305832, 0.1305832,…
+## $ population_density         &lt;dbl&gt; 24.117, 24.117, 24.117, 24.117, 24.117, 24.…
+## $ median_household_income    &lt;dbl&gt; 92.84, 92.84, 92.84, 92.84, 92.84, 92.84, 9…</code></pre>
+<pre class="r"><code>zip_df &lt;- df_merged |&gt;
+  group_by(zipcode) |&gt;
+  summarise(
+    rat_count_total = sum(rat_count_zip_month, na.rm = TRUE),
+    violation_total = sum(violation_count_zip_month, na.rm = TRUE),
+    inspection_total = sum(inspection_count_zip_month, na.rm = TRUE),
+    total_pop = mean(total_pop, na.rm = TRUE)
+  ) |&gt;
+  mutate(
+    rats_per_10000 = 10000 * rat_count_total / total_pop,
+    violations_per_restaurant = violation_total / inspection_total
+  ) |&gt;
+  filter(
+    !is.na(rats_per_10000),
+    !is.na(violations_per_restaurant)
+  )
+
+zip_df |&gt; head()</code></pre>
+<pre><code>## # A tibble: 6 × 7
+##   zipcode rat_count_total violation_total inspection_total total_pop
+##   &lt;chr&gt;             &lt;dbl&gt;           &lt;dbl&gt;            &lt;dbl&gt;     &lt;dbl&gt;
+## 1 10001               446            4191             1297     24117
+## 2 10002               964            3739             1077     74479
+## 3 10003               977            4712             1422     53977
+## 4 10004                57            1047              325      3335
+## 5 10005                71             542              147      8701
+## 6 10006                52             361              113      3092
+## # ℹ 2 more variables: rats_per_10000 &lt;dbl&gt;, violations_per_restaurant &lt;dbl&gt;</code></pre>
+<pre class="r"><code>ny_zcta &lt;- tigris::zctas(state = &quot;NY&quot;, year = 2010) |&gt;
+  dplyr::rename(zipcode = ZCTA5CE10) |&gt;
+  dplyr::mutate(zipcode = as.character(zipcode))  
+
+ny_zip_sf &lt;- ny_zcta |&gt;
+  dplyr::left_join(zip_df, by = &quot;zipcode&quot;) |&gt;
+  dplyr::filter(!is.na(violations_per_restaurant)) |&gt;
+  sf::st_transform(2263)  
+
+ny_zip_sf</code></pre>
+<pre><code>## Simple feature collection with 180 features and 17 fields
+## Geometry type: MULTIPOLYGON
+## Dimension:     XY
+## Bounding box:  xmin: 913090.7 ymin: 120053.5 xmax: 1080968 ymax: 272752.9
+## Projected CRS: NAD83 / New York Long Island (ftUS)
+## First 10 features:
+##    STATEFP10 zipcode GEOID10 CLASSFP10 MTFCC10 FUNCSTAT10  ALAND10 AWATER10
+## 1         36   10464 3610464        B5   G6350          S  9070627   236605
+## 2         36   10470 3610470        B5   G6350          S  3689950     3918
+## 3         36   10455 3610455        B5   G6350          S  1844518        0
+## 4         36   10473 3610473        B5   G6350          S  5645604    13868
+## 5         36   11234 3611234        B5   G6350          S 19547849  2143727
+## 6         36   11210 3611210        B5   G6350          S  4250381        0
+## 7         36   11215 3611215        B5   G6350          S  5641351    54168
+## 8         36   11224 3611224        B5   G6350          S  3999168    91783
+## 9         36   11239 3611239        B5   G6350          S  1477966    30120
+## 10        36   10030 3610030        B5   G6350          S   722465        0
+##     INTPTLAT10   INTPTLON10 PARTFLG10 rat_count_total violation_total
+## 1  +40.8677868 -073.7999204         N              48             216
+## 2  +40.8895273 -073.8726596         N             357             300
+## 3  +40.8147100 -073.9085917         N             894             926
+## 4  +40.8186904 -073.8584741         N             416             200
+## 5  +40.6050798 -073.9117206         N             583            1474
+## 6  +40.6281475 -073.9463244         N             482             669
+## 7  +40.6626879 -073.9867402         N            2372            2664
+## 8  +40.5773723 -073.9887059         N             378             519
+## 9  +40.6477354 -073.8794772         N              71             156
+## 10 +40.8182666 -073.9428564         N            1072             224
+##    inspection_total total_pop rats_per_10000 violations_per_restaurant
+## 1                70      4531      105.93688                  3.085714
+## 2                89     15716      227.15704                  3.370787
+## 3               261     41951      213.10577                  3.547893
+## 4                63     59579       69.82326                  3.174603
+## 5               415     93534       62.33028                  3.551807
+## 6               202     64665       74.53800                  3.311881
+## 7               834     69873      339.47304                  3.194245
+## 8               163     45795       82.54176                  3.184049
+## 9                48     12772       55.59035                  3.250000
+## 10               59     31060      345.13844                  3.796610
+##                          geometry
+## 1  MULTIPOLYGON (((1043380 257...
+## 2  MULTIPOLYGON (((1021394 267...
+## 3  MULTIPOLYGON (((1007191 237...
+## 4  MULTIPOLYGON (((1016265 238...
+## 5  MULTIPOLYGON (((1003791 151...
+## 6  MULTIPOLYGON (((1002259 169...
+## 7  MULTIPOLYGON (((985223.7 18...
+## 8  MULTIPOLYGON (((989083.2 15...
+## 9  MULTIPOLYGON (((1019132 179...
+## 10 MULTIPOLYGON (((1001262 237...</code></pre>
+<pre class="r"><code>ggplot(ny_zip_sf, aes(fill = rats_per_10000)) +
+  geom_sf(color = &quot;white&quot;, size = 0.1) +
+  scale_fill_viridis_c(option = &quot;C&quot;) +
+  labs(
+    title = &quot;Rat Sightings per 10,000 Residents (2019–2024)&quot;,
+    fill  = &quot;Rats / 10,000&quot;
+  ) +
+  theme_minimal()</code></pre>
+<p><img src="EDA_files/figure-html/map-rats-1.png" width="672" /></p>
+<pre class="r"><code>ggplot(ny_zip_sf, aes(fill = violations_per_restaurant)) +
+  geom_sf(color = &quot;white&quot;, size = 0.1) +
+  scale_fill_viridis_c(option = &quot;C&quot;) +
+  labs(
+    title = &quot;Violations per Restaurant (2019–2024)&quot;,
+    fill  = &quot;Violations / Inspection&quot;
+  ) +
+  theme_minimal()</code></pre>
+<p><img src="EDA_files/figure-html/map-viol-1.png" width="672" /></p>
+<pre class="r"><code># 构建空间权重（允许存在没有邻居的 polygon）
+nb &lt;- spdep::poly2nb(ny_zip_sf)
+lw &lt;- spdep::nb2listw(nb, style = &quot;W&quot;, zero.policy = TRUE)</code></pre>
+<pre class="r"><code># 对 rats_per_10000 做 Local Moran&#39;s I
+rats_lisa &lt;- spdep::localmoran(
+  ny_zip_sf$rats_per_10000,
+  lw,
+  zero.policy = TRUE
+)
+
+# 转成 data.frame，方便按列名 / 位置取
+rats_lisa_df &lt;- as.data.frame(rats_lisa)
+names(rats_lisa_df)   # 如果好奇可以看一下列名</code></pre>
+<pre><code>## [1] &quot;Ii&quot;             &quot;E.Ii&quot;           &quot;Var.Ii&quot;         &quot;Z.Ii&quot;          
+## [5] &quot;Pr(z != E(Ii))&quot;</code></pre>
+<pre class="r"><code>ny_zip_sf &lt;- ny_zip_sf |&gt;
+  dplyr::mutate(
+    rats_I    = rats_lisa_df$Ii,          # 第 1 列
+    rats_p    = rats_lisa_df[[ncol(rats_lisa_df)]],  # 最后一列，通常是 p-value
+    rats_mean = mean(rats_per_10000, na.rm = TRUE),
+    rats_centered = rats_per_10000 - rats_mean,
+    rats_lag  = spdep::lag.listw(lw, rats_per_10000, zero.policy = TRUE),
+
+    rats_quad = dplyr::case_when(
+      rats_centered &gt; 0 &amp; rats_lag &gt; 0 &amp; rats_p &lt;= 0.05 ~ &quot;High-High&quot;,
+      rats_centered &lt; 0 &amp; rats_lag &lt; 0 &amp; rats_p &lt;= 0.05 ~ &quot;Low-Low&quot;,
+      rats_centered &gt; 0 &amp; rats_lag &lt; 0 &amp; rats_p &lt;= 0.05 ~ &quot;High-Low&quot;,
+      rats_centered &lt; 0 &amp; rats_lag &gt; 0 &amp; rats_p &lt;= 0.05 ~ &quot;Low-High&quot;,
+      TRUE ~ &quot;Not significant&quot;
+    )
+  )</code></pre>
+<pre class="r"><code>cluster_cols &lt;- c(
+  &quot;High-High&quot;       = &quot;#b2182b&quot;,
+  &quot;Low-Low&quot;         = &quot;#2166ac&quot;,
+  &quot;High-Low&quot;        = &quot;#ef8a62&quot;,
+  &quot;Low-High&quot;        = &quot;#67a9cf&quot;,
+  &quot;Not significant&quot; = &quot;grey90&quot;
+)
+
+ggplot2::ggplot(ny_zip_sf, ggplot2::aes(fill = rats_quad)) +
+  ggplot2::geom_sf(color = &quot;white&quot;, size = 0.1) +
+  ggplot2::scale_fill_manual(values = cluster_cols) +
+  ggplot2::labs(
+    title = &quot;Local Moran&#39;s I Clusters for Rat Sightings per 10,000 Residents&quot;,
+    fill  = &quot;Cluster&quot;
+  ) +
+  ggplot2::theme_minimal()</code></pre>
+<p><img src="EDA_files/figure-html/map-lisa-rats-1.png" width="672" /></p>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,162 @@
+---
+title: "Analysis"
+output: 
+  html_document:
+    theme: flatly
+    toc: true
+    code_folding: hide
+    toc_float: true
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE
+)
+
+library(tidyverse)
+library(lubridate)
+library(janitor)
+library(sf)
+library(tigris)
+library(spdep)
+
+options(tigris_use_cache = TRUE)
+```
+
+
+---
+
+## 第 2 步：读入 Data.Rmd 导出的合并数据
+
+在 “5. 空间分析” 下面加一个 chunk，读取你在 Data.Rmd 中导出的 `zip_year_month_merged.csv`：
+
+```{r}
+df_merged <- readr::read_csv("data/zip_year_month_merged.csv") |>
+  janitor::clean_names() |>
+  dplyr::mutate(zipcode = as.character(zipcode))
+
+glimpse(df_merged)
+```
+
+
+```{r make-zip-df}
+zip_df <- df_merged |>
+  group_by(zipcode) |>
+  summarise(
+    rat_count_total = sum(rat_count_zip_month, na.rm = TRUE),
+    violation_total = sum(violation_count_zip_month, na.rm = TRUE),
+    inspection_total = sum(inspection_count_zip_month, na.rm = TRUE),
+    total_pop = mean(total_pop, na.rm = TRUE)
+  ) |>
+  mutate(
+    rats_per_10000 = 10000 * rat_count_total / total_pop,
+    violations_per_restaurant = violation_total / inspection_total
+  ) |>
+  filter(
+    !is.na(rats_per_10000),
+    !is.na(violations_per_restaurant)
+  )
+
+zip_df |> head()
+```
+
+
+
+
+```{r}
+ny_zcta <- tigris::zctas(state = "NY", year = 2010) |>
+  dplyr::rename(zipcode = ZCTA5CE10) |>
+  dplyr::mutate(zipcode = as.character(zipcode))  
+
+ny_zip_sf <- ny_zcta |>
+  dplyr::left_join(zip_df, by = "zipcode") |>
+  dplyr::filter(!is.na(violations_per_restaurant)) |>
+  sf::st_transform(2263)  
+
+ny_zip_sf
+```
+
+```{r map-rats}
+ggplot(ny_zip_sf, aes(fill = rats_per_10000)) +
+  geom_sf(color = "white", size = 0.1) +
+  scale_fill_viridis_c(option = "C") +
+  labs(
+    title = "Rat Sightings per 10,000 Residents (2019–2024)",
+    fill  = "Rats / 10,000"
+  ) +
+  theme_minimal()
+```
+
+
+```{r map-viol}
+ggplot(ny_zip_sf, aes(fill = violations_per_restaurant)) +
+  geom_sf(color = "white", size = 0.1) +
+  scale_fill_viridis_c(option = "C") +
+  labs(
+    title = "Violations per Restaurant (2019–2024)",
+    fill  = "Violations / Inspection"
+  ) +
+  theme_minimal()
+```
+
+```{r lisa-weights}
+# 构建空间权重（允许存在没有邻居的 polygon）
+nb <- spdep::poly2nb(ny_zip_sf)
+lw <- spdep::nb2listw(nb, style = "W", zero.policy = TRUE)
+
+```
+
+```{r lisa-rats}
+# 对 rats_per_10000 做 Local Moran's I
+rats_lisa <- spdep::localmoran(
+  ny_zip_sf$rats_per_10000,
+  lw,
+  zero.policy = TRUE
+)
+
+# 转成 data.frame，方便按列名 / 位置取
+rats_lisa_df <- as.data.frame(rats_lisa)
+names(rats_lisa_df)   # 如果好奇可以看一下列名
+
+ny_zip_sf <- ny_zip_sf |>
+  dplyr::mutate(
+    rats_I    = rats_lisa_df$Ii,          # 第 1 列
+    rats_p    = rats_lisa_df[[ncol(rats_lisa_df)]],  # 最后一列，通常是 p-value
+    rats_mean = mean(rats_per_10000, na.rm = TRUE),
+    rats_centered = rats_per_10000 - rats_mean,
+    rats_lag  = spdep::lag.listw(lw, rats_per_10000, zero.policy = TRUE),
+
+    rats_quad = dplyr::case_when(
+      rats_centered > 0 & rats_lag > 0 & rats_p <= 0.05 ~ "High-High",
+      rats_centered < 0 & rats_lag < 0 & rats_p <= 0.05 ~ "Low-Low",
+      rats_centered > 0 & rats_lag < 0 & rats_p <= 0.05 ~ "High-Low",
+      rats_centered < 0 & rats_lag > 0 & rats_p <= 0.05 ~ "Low-High",
+      TRUE ~ "Not significant"
+    )
+  )
+
+```
+
+
+```{r map-lisa-rats}
+cluster_cols <- c(
+  "High-High"       = "#b2182b",
+  "Low-Low"         = "#2166ac",
+  "High-Low"        = "#ef8a62",
+  "Low-High"        = "#67a9cf",
+  "Not significant" = "grey90"
+)
+
+ggplot2::ggplot(ny_zip_sf, ggplot2::aes(fill = rats_quad)) +
+  ggplot2::geom_sf(color = "white", size = 0.1) +
+  ggplot2::scale_fill_manual(values = cluster_cols) +
+  ggplot2::labs(
+    title = "Local Moran's I Clusters for Rat Sightings per 10,000 Residents",
+    fill  = "Cluster"
+  ) +
+  ggplot2::theme_minimal()
+```
+
+
