@@ -20,7 +20,7 @@ navbar:
     - text: "Discussion"
       href: discussion.html
     - text: "Interactive Map"
-      href: interactive map.html
+      href: interactive_map.html
     - icon: fa-play-circle fa-lg
       href: 
     - icon: fa-envelope fa-lg
