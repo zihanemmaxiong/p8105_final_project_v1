@@ -1,4 +1,5 @@
 ---
+title: "Modelling"
 output: 
   html_document:
     theme: flatly
@@ -165,7 +166,7 @@ model1_results <- tidy(model1, exponentiate = TRUE, conf.int = TRUE) |>
     estimate = round(estimate, 3),
     conf.low = round(conf.low, 3),
     conf.high = round(conf.high, 3),
-    p.value = ifelse(p.value < 0.001, "<0.001***", round(p.value, 3))
+    p.value = ifelse(p.value < 0.05, "<0.05***", round(p.value, 3))
   ) |>
   rename(
     term = term,
@@ -393,4 +394,4 @@ cv_df |>
 
 ```
 
-
+</div>

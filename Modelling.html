@@ -11,7 +11,7 @@
 
 
 
-<title>Modelling.knit</title>
+<title>Modelling</title>
 
 <script src="site_libs/header-attrs-2.29/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -390,6 +390,7 @@ div.tocify {
 
 
 
+<h1 class="title toc-ignore">Modelling</h1>
 
 </div>
 
@@ -545,7 +546,7 @@ model1_results &lt;- tidy(model1, exponentiate = TRUE, conf.int = TRUE) |&gt;
     estimate = round(estimate, 3),
     conf.low = round(conf.low, 3),
     conf.high = round(conf.high, 3),
-    p.value = ifelse(p.value &lt; 0.001, &quot;&lt;0.001***&quot;, round(p.value, 3))
+    p.value = ifelse(p.value &lt; 0.05, &quot;&lt;0.05***&quot;, round(p.value, 3))
   ) |&gt;
   rename(
     term = term,
@@ -556,13 +557,13 @@ model1_results &lt;- tidy(model1, exponentiate = TRUE, conf.int = TRUE) |&gt;
   )
 
 kable(model1_results)</code></pre>
-<table style="width:100%;">
+<table>
 <colgroup>
 <col width="22%" />
 <col width="8%" />
 <col width="14%" />
 <col width="14%" />
-<col width="14%" />
+<col width="13%" />
 <col width="11%" />
 <col width="13%" />
 </colgroup>
@@ -583,7 +584,7 @@ kable(model1_results)</code></pre>
 <td align="right">8.060</td>
 <td align="right">0.0145260</td>
 <td align="right">143.67164</td>
-<td align="left">&lt;0.001***</td>
+<td align="left">&lt;0.05***</td>
 <td align="right">7.830</td>
 <td align="right">8.300</td>
 </tr>
@@ -592,7 +593,7 @@ kable(model1_results)</code></pre>
 <td align="right">1.134</td>
 <td align="right">0.0055727</td>
 <td align="right">22.60395</td>
-<td align="left">&lt;0.001***</td>
+<td align="left">&lt;0.05***</td>
 <td align="right">1.121</td>
 <td align="right">1.147</td>
 </tr>
