@@ -11,7 +11,7 @@
 
 
 
-<title>Discussion</title>
+<title>About us</title>
 
 <script src="site_libs/header-attrs-2.29/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -33,6 +33,7 @@
 <link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
 <link href="site_libs/font-awesome-6.5.2/css/all.min.css" rel="stylesheet" />
@@ -222,6 +223,9 @@ $(document).ready(function () {
 </style>
 
 <!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
 
 
 
@@ -325,46 +329,34 @@ div.tocify {
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
-  <a href="home.html">Home</a>
+  <a href="home.html">home</a>
 </li>
 <li>
-  <a href="about_us.html">About us</a>
+  <a href="about_us.html">about_us</a>
 </li>
 <li>
-  <a href="proposal.html">Proposal</a>
+  <a href="proposal.html">proposal</a>
 </li>
 <li>
-  <a href="report.html">Report</a>
+  <a href="report.html">report</a>
 </li>
 <li>
-  <a href="data.html">Data</a>
+  <a href="data.html">data</a>
 </li>
 <li>
-  <a href="eda.html">EDA</a>
+  <a href="eda.html">eda</a>
 </li>
 <li>
-  <a href="modelling.html">Modelling</a>
+  <a href="modelling.html">modelling</a>
 </li>
 <li>
-  <a href="discussion.html">Discussion</a>
+  <a href="discussion.html">discussion</a>
 </li>
 <li>
-  <a href="interactive_map.html">Interactive Map</a>
+  <a href="interactive_map.html">interactive Map</a>
 </li>
 <li>
-  <a>
-    <span class="fa fa-play-circle fa-lg"></span>
-     
-  </a>
-</li>
-<li>
-  <a href="mailto:&lt;zx2527@cumc.columbia.edu&gt;">
-    <span class="fa fa-envelope fa-lg"></span>
-     
-  </a>
-</li>
-<li>
-  <a href="https://github.com/zihanemmaxiong/p8105_final_project/tree/main">
+  <a href="https://github.com/zihanemmaxiong/p8105_final_project_v1.git">
     <span class="fa fa-github fa-lg"></span>
      
   </a>
@@ -376,9 +368,17 @@ div.tocify {
 
 <div id="header">
 
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
 
 
-<h1 class="title toc-ignore">Discussion</h1>
+
+<h1 class="title toc-ignore">About us</h1>
 
 </div>
 
@@ -389,15 +389,37 @@ body {
 }
 
 h1, h2, h3, h4, h5 {
-  color: #382320 !important;     
+  color: #382320 !important;   
 }
 </style>
-<div class="body-overlay">
-
-</div>
-<div class="main-container">
 <p><link href="https://fonts.googleapis.com/css2?family=Kranky&display=swap" rel="stylesheet"></p>
 <style>
+
+body {
+  background-image: url("images/About_background.png");
+  background-size: cover;
+  background-attachment: fixed;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.body-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 190%;
+  height: 130%;
+  background: rgba(255,255,255,0.1);
+  z-index: -1;
+  pointer-events: none;
+}
+
+.main-container {
+  background: rgba(255,255,255,0.75);
+  padding: 20px;
+  border-radius: 12px;
+}
+
 .rat-title {
   font-family: 'Kranky', cursive;
   font-size: 46px;
@@ -407,98 +429,55 @@ h1, h2, h3, h4, h5 {
   margin-top: 10px;
   margin-bottom: 14px;
 }
+
 </style>
 <style>
-body {
-  background-image: url("images/proposal_bg.jpg");
-  background-size: cover;
-  background-attachment: fixed;
-  background-position: center;
-  background-repeat: no-repeat;
-  opacity: 1;
+.team-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 28px;
 }
 
-.body-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 190%;    
-  height: 120%;   
-  background: rgba(255,255,255,0.05); 
-  z-index: -1;    
-  pointer-events: none;
+.team-photo {
+  width: 120px;         
+  height: 120px;
+  border-radius: 50%;     
+  object-fit: cover;     
+  margin-right: 22px;
+  border: none;          
 }
 
-.main-container {
-  background: rgba(255,255,255,0.75);
-  padding: 20px;
-  border-radius: 12px;
+.team-name {
+  font-size: 22px;
+  font-weight: 600;
+  color: #333;
 }
 </style>
 <h1 class="rat-title">
-Discussion
+Meet Our Team
 </h1>
-<hr />
-<p>In this study, we integrated New York City rat sighting reports with
-restaurant inspection results to investigate the potential association
-between neighborhood-level restaurant sanitation and rat activity. Our
-results indicate that monthly rat sightings exhibit a clear seasonal
-pattern—peaking in warmer months—and show a sustained upward trend in
-the post-pandemic period. In contrast, restaurant violation rates remain
-relatively stable over time with smaller fluctuations. This suggests
-that restaurant sanitation likely represents only one contributing risk
-component.</p>
-<p>Moreover, we observed that the spatial distributions of rat sightings
-and restaurant violation rates only partially overlap. Some
-neighborhoods experience high violation rates without the highest rat
-activity, while others show substantial rat problems despite relatively
-low violation rates. These findings suggest that rat infestations are
-shaped by a more complex interplay of factors—such as population
-density, poverty burden, aging housing stock, and urban
-infrastructure—beyond restaurant sanitation alone. In addition, the
-detection of clear hotspot clusters indicates potential spatial
-spillover of environmental health risks across neighboring ZIP
-codes.</p>
-<p>Further modeling analyses revealed that the best model - lagged
-(one-month) restaurant violation rate is a statistically significant
-predictor of rat sightings. This supports a plausible mechanism: poorer
-sanitation and improper waste handling in restaurants may create more
-favorable food and habitat conditions for rats, leading to increased
-activity and sightings in the following month. Additionally,
-socioeconomic characteristics—such as neighborhood poverty levels and
-population density—were also significantly associated with rat activity,
-indicating underlying structural disparities across communities. These
-findings highlight that rat problems are closely tied not only to local
-sanitation management but also to broader dimensions of urban
-infrastructure and public health equity.</p>
-<p>The temporal and spatial disparities revealed in this study provide
-important guidance for urban rodent control strategies. First, the sharp
-seasonal rise in rat activity during summer suggests that the city
-should reinforce waste management and inspection efforts in advance of
-high-risk months, particularly within hotspot ZIP codes. Second, the
-observed lagged association between restaurant violation rates and rat
-sightings highlights the value of coordinated environmental health
-governance—strengthening food sanitation enforcement and improving waste
-handling practices may help reduce subsequent rodent exposure risks.
-Furthermore, the socioeconomic patterns observed indicate that rat
-burdens are disproportionately concentrated in resource-limited
-communities, underscoring the need to incorporate health equity
-considerations into municipal pest-control planning.</p>
-<div id="limitations" class="section level2">
-<h2>Limitations</h2>
-<p>Despite these meaningful insights, several limitations should be
-acknowledged. Rat sighting data rely on resident reporting, which may be
-influenced by behavioral factors such as pandemic-related activity
-changes or differential awareness across communities, introducing
-potential reporting bias. In addition, considering of complexicity of
-this study, violation rate reflects sanitation only at the restaurant
-level and does not account for broader environmental determinants such
-as street garbage systems, building age and maintenance, underground
-infrastructure, or transit corridors, limiting the strength of causal
-interpretations. Finally, while ZIP–Month aggregation facilitates
-spatio-temporal modeling, it may mask finer-scale variation; future work
-could leverage more granular geographic units to refine environmental
-risk assessment.</p>
+<div class="team-row">
+<img src="images/About_Rat1.jpg" class="team-photo"/>
+<div class="team-name">
+Zihan Xiong (zx2527)
+</div>
+</div>
+<div class="team-row">
+<img src="images/About_Rat2.jpg" class="team-photo"/>
+<div class="team-name">
+Wanting Dong (wd2311)
+</div>
+</div>
+<div class="team-row">
+<img src="images/About_Rat3.jpg" class="team-photo"/>
+<div class="team-name">
+Hsuanyi Lee (hl3858)
+</div>
+</div>
+<div class="team-row">
+<img src="images/About_Rat4.jpg" class="team-photo"/>
+<div class="team-name">
+Yue Hu (yh3823)
 </div>
 </div>
 
@@ -537,6 +516,11 @@ $(document).ready(function () {
 </script>
 
 <!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
 
 <script>
 $(document).ready(function ()  {

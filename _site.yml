@@ -1,10 +1,10 @@
 
 title: "Rats and Restaurants in NYC"
-output_dir: "."
+output_dir: "docs"
 navbar:
-  right:   
+  right:
     - text: "Home"
-      href: home.html
+      href: index.html
     - text: "About us"
       href: about_us.html
     - text: "Proposal"
@@ -21,14 +21,10 @@ navbar:
       href: discussion.html
     - text: "Interactive Map"
       href: interactive_map.html
-    - icon: fa-play-circle fa-lg
-      href: 
-    - icon: fa-envelope fa-lg
-      href: mailto:<zx2527@cumc.columbia.edu>
     - icon: fa-github fa-lg
-      href: https://github.com/zihanemmaxiong/p8105_final_project/tree/main
-    
+      href: https://github.com/zihanemmaxiong/p8105_final_project_v1.git
+
 output:
-  html_document: 
+  html_document:
     theme: flatly
-    css: styles.css 
+    css: styles.css
