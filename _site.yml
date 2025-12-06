@@ -1,6 +1,6 @@
 
 title: "Rats and Restaurants in NYC"
-output_dir: "docs"
+output_dir: "."
 navbar:
   right:
     - text: "Home"
@@ -23,6 +23,7 @@ navbar:
       href: interactive_map.html
     - icon: fa-github fa-lg
       href: https://github.com/zihanemmaxiong/p8105_final_project_v1.git
+
 
 output:
   html_document:
