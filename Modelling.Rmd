@@ -165,7 +165,7 @@ model1_results <- tidy(model1, exponentiate = TRUE, conf.int = TRUE) |>
     estimate = round(estimate, 3),
     conf.low = round(conf.low, 3),
     conf.high = round(conf.high, 3),
-    p.value = ifelse(p.value < 0.001, "<0.001", round(p.value, 3))
+    p.value = ifelse(p.value < 0.001, "<0.001***", round(p.value, 3))
   ) |>
   rename(
     term = term,
@@ -207,7 +207,7 @@ model2_results <- tidy(model2, exponentiate = TRUE, conf.int = TRUE) |>
     estimate = round(estimate, 3),
     conf.low = round(conf.low, 3),
     conf.high = round(conf.high, 3),
-    p.value = ifelse(p.value < 0.001, "<0.001", round(p.value, 3))
+    p.value = ifelse(p.value < 0.001, "<0.001***", round(p.value, 3))
   ) |>
   rename(
     term = term,
@@ -254,7 +254,7 @@ model3_results <- tidy(model3, exponentiate = TRUE, conf.int = TRUE) |>
     estimate = round(estimate, 3),
     conf.low = round(conf.low, 3),
     conf.high = round(conf.high, 3),
-    p.value = ifelse(p.value < 0.001, "<0.001", round(p.value, 3))
+    p.value = ifelse(p.value < 0.001, "<0.001***", round(p.value, 3))
   ) |>
   rename(
     term = term,
@@ -299,7 +299,7 @@ model4_results <- tidy(model4, exponentiate = TRUE, conf.int = TRUE) |>
     estimate = round(estimate, 3),
     conf.low = round(conf.low, 3),
     conf.high = round(conf.high, 3),
-    p.value = ifelse(p.value < 0.001, "<0.001", round(p.value, 3))
+    p.value = ifelse(p.value < 0.001, "<0.001***", round(p.value, 3))
   ) |>
   rename(
     term = term,
