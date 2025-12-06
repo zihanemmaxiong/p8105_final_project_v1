@@ -1,0 +1,168 @@
+---
+title: "EDA"
+output: 
+  html_document:
+    theme: flatly
+    toc: true
+    code_folding: hide
+    toc_float: true
+---
+
+```{r, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(readr)
+library(janitor)
+library(dplyr)
+library(lubridate)
+library(ggplot2)
+library(plotly)
+library(knitr)
+
+
+knitr::opts_chunk$set(
+	echo = TRUE,
+	warning = FALSE,
+  fig.width = 6,
+  fig.asp = .6,
+  out.width = "90%"
+)
+
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+```
+
+## Rat Sighting Temporal Exploration
+
+Next, we aim to examine whether there are temporal trends in rat sighting. Specifically, we explore potential seasonal patterns as well as differences across months and years. For this analysis, we use the cleaned merged dataset at the ZIP code × year × month level.
+
+```{r,message = FALSE, warning = FALSE}
+rat=read_csv("./data/zip_year_month_merged.csv")|>
+  mutate(month=as.integer(month)) |>
+  group_by(year, month) |>
+  summarise(rat_count_month = sum(rat_count_zip_month, na.rm = TRUE),.groups = "drop") |>
+  arrange(year, month) |>
+  mutate(
+    month_label=month.abb[month],
+    month_label=factor(month_label, levels = month.abb)
+  ) 
+```
+
+### Monthly Rat Sightings in NYC (2019–2024)
+**First**, we examined the monthly total number of rat sightings from 2019 to 2024. The line plot clearly reveals a **distinct seasonal pattern**: rat sightings typically rise from spring into late summer (May–September), peak around July–August, and drop sharply during winter months. This pattern is likely driven by seasonal environmental factors such as temperature, food availability, and increased outdoor human activity (reference1).
+
+**Second**, there are noticeable **year-to-year differences**, particularly around the COVID-19 pandemic period. Counts in 2020 are substantially lower, which may reflect reduced human activity during lockdown (e.g., fewer restaurant operations, less outdoor waste, and lower reporting frequency). However, beginning in 2021, sightings rebounded quickly and reached the highest peak in summer 2022 (approximately 3000 reports). This suggests a potential increasing long-term trend in rat activity, possibly related to environmental changes or differences in municipal control strategies.
+
+```{r,message = FALSE, warning = FALSE}
+plot_ly(
+  rat,
+  x = ~month_label,
+  y = ~rat_count_month,
+  color = ~factor(year),
+  type = 'scatter',
+  mode = 'lines+markers'
+  ) |>
+  layout(
+    xaxis = list(title = "Month"),
+    yaxis = list(title = "Rat Sightings Count")
+  )
+
+```
+### Distribution of Monthly Rat Sightings per ZIP
+
+At the same time, we considered another important question: What does the distribution of NYC ZIP–Month rat sightings look like? Are there substantial differences across geographic areas? How many ZIP–Month observations report zero or very low counts, and how many approach the higher end of the range?
+
+The histogram of ZIP–Month rat sightings shows that **most ZIP–Month combinations have very low rat counts**, with only a small proportion exhibiting high values. This results in a **highly right-skewed distribution**, indicating that rat activity is spatially **concentrated** and that a handful of ZIP areas represent outliers with disproportionately high sightings.
+```{r, include = FALSE, message = FALSE, warning = FALSE}
+rat1=read_csv("./data/zip_year_month_merged.csv") 
+```
+
+```{r, message = FALSE, warning = FALSE}
+plot_ly(
+  rat1,
+    x = ~rat_count_zip_month,
+    type = "histogram",
+    nbinsx = 60,  
+    marker = list(color = 'rgba(55, 55, 55, 0.8)')
+  ) |>
+  layout(
+    xaxis = list(title = "Rat Sightings (ZIP-Month)"),
+    yaxis = list(title = "Number of ZIP-Month Observations"),
+    bargap = 0.05
+  )
+```
+
+Rat sightings count also shows strong overdispersion: the variance (156.4) is far greater than the mean (10.2).
+```{r, message = FALSE, warning = FALSE}
+
+rat_stats <- data.frame(
+  Statistic = c("Mean of Monthly Rat Sightings", "Variance of Monthly Rat Sightings"),
+  Value = c(mean(rat1$rat_count_zip_month), var(rat1$rat_count_zip_month))
+)
+
+kable(rat_stats)
+```
+
+## NYC Restaurants Inspection Results Temporal Exploration 
+While examining the temporal trend of rat sightings, we also investigated whether overall restaurant sanitation levels in NYC changed over time from 2019 to 2024. To represent area-level sanitation in a simple yet meaningful way, we calculated a proxy variable, `violation_rate`, defined as:
+$$
+\text{violation_rate} = \frac{\text{violation_count_zip_month}}{\text{inspection_count_zip_month}}
+$$
+
+This rate reflects the proportion of inspections that resulted in at least one violation within each ZIP–Month unit.
+
+<small>
+*Note: To ensure temporal alignment with the rat sighting dataset, the restaurant data were filtered to the same 2019–2024 period. During data cleaning, we observed notable missingness in 2020–2021, likely due to COVID-19 shutdowns affecting restaurant operations and inspections. However, we retained these missing values to preserve data integrity and because they provide important context for interpretation and modeling.*
+</small>
+
+```{r,message = FALSE, warning = FALSE}
+rest=read_csv("./data/zip_year_month_merged.csv") |>
+  group_by(year, month) |>
+  summarise(
+    total_violations = sum(violation_count_zip_month, na.rm = TRUE),
+    total_inspections = sum(inspection_count_zip_month, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  mutate(
+    violation_rate = if_else(total_inspections > 0,
+                             total_violations / total_inspections,
+                             NA_real_),
+    month_label = factor(
+      month,
+      levels = 1:12,
+      labels = month.abb
+    )
+  )
+
+```
+
+### Monthly Restaurant Violation Rate in NYC (2019–2024)
+
+Similarly to rat sighting trends, we examined whether overall restaurant sanitation levels show seasonal patterns. We found that the seasonal variation in violation rates is much **less pronounced** compared to rats, and differences across years are relatively **small** (excluding the pandemic-affected months in 2020–2021, most monthly violation rates remain between 3.0 and 3.6). Violation levels in 2022–2024 appear slightly higher than pre-pandemic years. Overall, this suggests that restaurant sanitation conditions may be more influenced by inspection practices and regulatory enforcement rather than environmental seasonality.
+
+```{r,message = FALSE, warning = FALSE}
+plot_ly(
+  rest,
+  x = ~month_label,
+  y = ~violation_rate,
+  color = ~factor(year),
+  type = 'scatter',
+  mode = 'lines+markers'
+) |>
+  layout(
+    xaxis = list(title = "Month"),
+    yaxis = list(title = "Violation Rate")
+  )
+```
+
+**In summary, the temporal analysis offers meaningful guidance for our modeling strategy:**
+
+1. Rat sighting activity fluctuates much more noticeably over time compared to restaurant violation rates. This suggests that rats are strongly influenced by environmental and seasonal conditions, while restaurant sanitation is likely just one part of a broader set of contributing factors. Future work may benefit from exploring additional environmental variables.
+
+2. Time clearly plays an important role. Including **Month** and **Year** as fixed effects will help capture both seasonal patterns and year-to-year changes (such as the pandemic dip), leading to more reliable estimates of the relationship between restaurant-related risks and rat activity.

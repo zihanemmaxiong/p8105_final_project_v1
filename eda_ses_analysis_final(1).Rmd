@@ -1,0 +1,140 @@
+---
+title: "Exploratory SES Analysis for Final Model"
+author: "Yue Hu"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE
+)
+
+library(tidyverse)
+library(janitor)
+```
+
+## 1. Introduction
+
+This exploratory analysis uses the merged ZIP–year–month dataset to examine whether three socioeconomic variables:
+	•	poverty_rate
+	•	population_density
+	•	median_household_income
+
+are associated with the outcome:
+	•	rat_count_zip_month
+
+and the exposure:
+	•	violation_rate_per_inspection = violation_count_zip_month / inspection_count_zip_month
+
+The goal is to determine which SES variables should be included as covariates in the final regression model.
+
+
+## 2. Import Merged Data
+```{r load}
+dat <- read_csv("data/zip_year_month_merged.csv") %>%
+  clean_names()
+
+glimpse(dat)
+```
+
+## 3. Compute Exposure Variable
+```{r compute-exposure}
+dat <- dat %>%
+  mutate(
+    violation_rate_per_inspection =
+      if_else(inspection_count_zip_month > 0,
+              violation_count_zip_month / inspection_count_zip_month,
+              NA_real_)
+  )
+
+summary(dat$violation_rate_per_inspection)
+```
+
+## 4. Distribution of SES Variables
+```{r ses-distribution}
+dat %>%
+  select(poverty_rate, population_density, median_household_income) %>%
+  pivot_longer(everything(), names_to = "variable", values_to = "value") %>%
+  ggplot(aes(x = value)) +
+  geom_histogram(bins = 30, alpha = 0.7) +
+  facet_wrap(~ variable, scales = "free") +
+  theme_minimal()
+```
+
+The SES variables show substantial variation across ZIP codes in New York City. Poverty rate exhibits a right-skewed distribution, indicating that while many ZIP codes have relatively low poverty, a considerable number experience markedly higher poverty levels. Population density varies dramatically across ZIP codes, reflecting known differences between outer-borough residential zones and the densely populated core of Manhattan. Median household income shows a long right tail, as several ZIP codes include affluent neighborhoods with income levels far above the citywide median. These distributions demonstrate that SES indicators in the data contain sufficient variability to meaningfully examine their associations with rat sightings and restaurant violations.
+
+
+## 5. Correlations Between SES and Outcome/Exposure
+```{r correlations}
+corr_data <- dat %>%
+  select(
+    rat_count_zip_month,
+    violation_rate_per_inspection,
+    poverty_rate,
+    population_density,
+    median_household_income
+  )
+
+cor_matrix <- cor(corr_data, use = "pairwise.complete.obs")
+
+cor_matrix
+```
+Correlation analysis reveals meaningful relationships between SES variables and both the outcome and exposure. Rat sightings are positively correlated with poverty rate and population density, suggesting that poorer or more crowded neighborhoods tend to report more rat activity. Median household income is slightly negatively correlated with rat sightings, implying that wealthier ZIP codes generally experience fewer rat complaints.
+
+Population density exhibits the strongest positive correlation with restaurant violation rates, indicating that dense neighborhoods are more likely to have sanitation issues reflected in inspection outcomes. Poverty rate has a weak positive relationship with the violation rate, while median household income shows a weak negative association with violations.
+
+The SES variables are also correlated with each other. Poverty rate and median household income display a strong negative correlation, while population density is moderately positively correlated with poverty rate. These relationships highlight potential multicollinearity concerns if certain SES variables are included together in later multivariable models.
+
+## 6. SES vs Outcome: Rat Count
+```{r ses-vs-rats}
+ggplot(dat, aes(x = poverty_rate, y = rat_count_zip_month)) +
+  geom_point(alpha = 0.4) +
+  geom_smooth(method = "lm") +
+  theme_minimal() +
+  labs(title = "Rat Count vs Poverty Rate")
+
+ggplot(dat, aes(x = population_density, y = rat_count_zip_month)) +
+  geom_point(alpha = 0.4) +
+  geom_smooth(method = "lm") +
+  theme_minimal() +
+  labs(title = "Rat Count vs Population Density")
+
+ggplot(dat, aes(x = median_household_income, y = rat_count_zip_month)) +
+  geom_point(alpha = 0.4) +
+  geom_smooth(method = "lm") +
+  theme_minimal() +
+  labs(title = "Rat Count vs Median Household Income")
+```
+
+Each of the SES variables demonstrates a distinct association with rat sighting activity. ZIP codes with higher poverty rates consistently show higher rat sighting counts, which may reflect reduced infrastructure quality, fewer resources for pest control, and greater environmental stress. Population density is also positively associated with rat sightings, likely because denser regions generate greater waste and offer more food sources and nesting sites for rodents. Median household income displays a negative association with rat sightings; higher-income neighborhoods report fewer rat incidents, which may reflect better building maintenance, improved sanitation, and greater access to pest management services.
+
+## 7. SES vs Exposure: Violation Rate per Inspection
+```{r ses-vs-exposure}
+ggplot(dat, aes(x = poverty_rate, y = violation_rate_per_inspection)) +
+  geom_point(alpha = 0.4) +
+  geom_smooth(method = "lm") +
+  theme_minimal() +
+  labs(title = "Violation Rate per Inspection vs Poverty Rate")
+
+ggplot(dat, aes(x = population_density, y = violation_rate_per_inspection)) +
+  geom_point(alpha = 0.4) +
+  geom_smooth(method = "lm") +
+  theme_minimal() +
+  labs(title = "Violation Rate per Inspection vs Population Density")
+
+ggplot(dat, aes(x = median_household_income, y = violation_rate_per_inspection)) +
+  geom_point(alpha = 0.4) +
+  geom_smooth(method = "lm") +
+  theme_minimal() +
+  labs(title = "Violation Rate per Inspection vs Median Household Income")
+```
+
+Population density is the SES indicator most strongly associated with the violation rate per inspection. ZIP codes with higher density tend to have higher restaurant violation rates, possibly because dense areas contain more restaurants, higher foot traffic, and environmental pressures that challenge sanitation practices. Poverty rate shows a mild positive trend with violation rates, while median household income shows a mild negative relationship, consistent with socioeconomic patterns observed in the rat sighting analysis.
+
+## 8.Summary
+
+This exploratory analysis demonstrates that poverty rate and population density are the two socioeconomic indicators most strongly and consistently associated with both monthly rat sighting counts and the violation rate per restaurant inspection across New York City ZIP codes from 2019 to 2024. ZIP codes with higher poverty or greater population density tend to exhibit more rat activity and higher restaurant violation burdens, highlighting these SES factors as important structural characteristics relevant to environmental conditions and sanitation outcomes.
+
+Given their clear relationships with both the outcome and exposure, and their conceptual relevance as neighborhood-level socioeconomic determinants, poverty rate and population density should be included as key covariates in the final regression model. In contrast, median household income should not be included jointly with poverty rate, as the two measures are strongly negatively correlated and would likely introduce multicollinearity, reducing the stability and interpretability of model estimates.
