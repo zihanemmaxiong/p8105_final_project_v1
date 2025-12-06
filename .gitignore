@@ -2,3 +2,7 @@
 .Rhistory
 .RData
 .Ruserdata
+<<<<<<< HEAD
+=======
+site_libs/
+>>>>>>> 887d098 (Ignore site_libs to avoid merge conflicts)
