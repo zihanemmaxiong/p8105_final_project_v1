@@ -16,7 +16,7 @@ navbar:
     - text: "EDA"
       href: eda.html
     - text: "Modelling"
-      href: analysis.html
+      href: modelling.html
     - text: "Discussion"
       href: discussion.html
     - text: "Appendix"
