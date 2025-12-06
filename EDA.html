@@ -11,7 +11,7 @@
 
 
 
-<title>Analysis</title>
+<title>EDA</title>
 
 <script src="site_libs/header-attrs-2.29/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -389,33 +389,19 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore">Analysis</h1>
+<h1 class="title toc-ignore">EDA</h1>
 
 </div>
 
 
 <hr />
-<div id="第-2-步读入-data.rmd-导出的合并数据" class="section level2">
-<h2>第 2 步：读入 Data.Rmd 导出的合并数据</h2>
+<div id="spatial-analysis" class="section level1">
+<h1>Spatial Analysis</h1>
 <p>在 “5. 空间分析” 下面加一个 chunk，读取你在 Data.Rmd 中导出的
 <code>zip_year_month_merged.csv</code>：</p>
 <pre class="r"><code>df_merged &lt;- readr::read_csv(&quot;data/zip_year_month_merged.csv&quot;) |&gt;
   janitor::clean_names() |&gt;
-  dplyr::mutate(zipcode = as.character(zipcode))
-
-glimpse(df_merged)</code></pre>
-<pre><code>## Rows: 12,960
-## Columns: 10
-## $ zipcode                    &lt;chr&gt; &quot;10001&quot;, &quot;10001&quot;, &quot;10001&quot;, &quot;10001&quot;, &quot;10001&quot;…
-## $ year                       &lt;dbl&gt; 2019, 2019, 2019, 2019, 2019, 2019, 2019, 2…
-## $ month                      &lt;dbl&gt; 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 1, 2…
-## $ rat_count_zip_month        &lt;dbl&gt; 2, 2, 6, 9, 5, 2, 4, 8, 4, 5, 1, 2, 2, 2, 3…
-## $ violation_count_zip_month  &lt;dbl&gt; 0, 0, 0, 2, 5, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0…
-## $ inspection_count_zip_month &lt;dbl&gt; 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0…
-## $ total_pop                  &lt;dbl&gt; 24117, 24117, 24117, 24117, 24117, 24117, 2…
-## $ poverty_rate               &lt;dbl&gt; 0.1305832, 0.1305832, 0.1305832, 0.1305832,…
-## $ population_density         &lt;dbl&gt; 24.117, 24.117, 24.117, 24.117, 24.117, 24.…
-## $ median_household_income    &lt;dbl&gt; 92.84, 92.84, 92.84, 92.84, 92.84, 92.84, 9…</code></pre>
+  dplyr::mutate(zipcode = as.character(zipcode))</code></pre>
 <pre class="r"><code>zip_df &lt;- df_merged |&gt;
   group_by(zipcode) |&gt;
   summarise(
@@ -431,19 +417,7 @@ glimpse(df_merged)</code></pre>
   filter(
     !is.na(rats_per_10000),
     !is.na(violations_per_restaurant)
-  )
-
-zip_df |&gt; head()</code></pre>
-<pre><code>## # A tibble: 6 × 7
-##   zipcode rat_count_total violation_total inspection_total total_pop
-##   &lt;chr&gt;             &lt;dbl&gt;           &lt;dbl&gt;            &lt;dbl&gt;     &lt;dbl&gt;
-## 1 10001               446            4191             1297     24117
-## 2 10002               964            3739             1077     74479
-## 3 10003               977            4712             1422     53977
-## 4 10004                57            1047              325      3335
-## 5 10005                71             542              147      8701
-## 6 10006                52             361              113      3092
-## # ℹ 2 more variables: rats_per_10000 &lt;dbl&gt;, violations_per_restaurant &lt;dbl&gt;</code></pre>
+  )</code></pre>
 <pre class="r"><code>ny_zcta &lt;- tigris::zctas(state = &quot;NY&quot;, year = 2010) |&gt;
   dplyr::rename(zipcode = ZCTA5CE10) |&gt;
   dplyr::mutate(zipcode = as.character(zipcode))  
@@ -451,59 +425,7 @@ zip_df |&gt; head()</code></pre>
 ny_zip_sf &lt;- ny_zcta |&gt;
   dplyr::left_join(zip_df, by = &quot;zipcode&quot;) |&gt;
   dplyr::filter(!is.na(violations_per_restaurant)) |&gt;
-  sf::st_transform(2263)  
-
-ny_zip_sf</code></pre>
-<pre><code>## Simple feature collection with 180 features and 17 fields
-## Geometry type: MULTIPOLYGON
-## Dimension:     XY
-## Bounding box:  xmin: 913090.7 ymin: 120053.5 xmax: 1080968 ymax: 272752.9
-## Projected CRS: NAD83 / New York Long Island (ftUS)
-## First 10 features:
-##    STATEFP10 zipcode GEOID10 CLASSFP10 MTFCC10 FUNCSTAT10  ALAND10 AWATER10
-## 1         36   10464 3610464        B5   G6350          S  9070627   236605
-## 2         36   10470 3610470        B5   G6350          S  3689950     3918
-## 3         36   10455 3610455        B5   G6350          S  1844518        0
-## 4         36   10473 3610473        B5   G6350          S  5645604    13868
-## 5         36   11234 3611234        B5   G6350          S 19547849  2143727
-## 6         36   11210 3611210        B5   G6350          S  4250381        0
-## 7         36   11215 3611215        B5   G6350          S  5641351    54168
-## 8         36   11224 3611224        B5   G6350          S  3999168    91783
-## 9         36   11239 3611239        B5   G6350          S  1477966    30120
-## 10        36   10030 3610030        B5   G6350          S   722465        0
-##     INTPTLAT10   INTPTLON10 PARTFLG10 rat_count_total violation_total
-## 1  +40.8677868 -073.7999204         N              48             216
-## 2  +40.8895273 -073.8726596         N             357             300
-## 3  +40.8147100 -073.9085917         N             894             926
-## 4  +40.8186904 -073.8584741         N             416             200
-## 5  +40.6050798 -073.9117206         N             583            1474
-## 6  +40.6281475 -073.9463244         N             482             669
-## 7  +40.6626879 -073.9867402         N            2372            2664
-## 8  +40.5773723 -073.9887059         N             378             519
-## 9  +40.6477354 -073.8794772         N              71             156
-## 10 +40.8182666 -073.9428564         N            1072             224
-##    inspection_total total_pop rats_per_10000 violations_per_restaurant
-## 1                70      4531      105.93688                  3.085714
-## 2                89     15716      227.15704                  3.370787
-## 3               261     41951      213.10577                  3.547893
-## 4                63     59579       69.82326                  3.174603
-## 5               415     93534       62.33028                  3.551807
-## 6               202     64665       74.53800                  3.311881
-## 7               834     69873      339.47304                  3.194245
-## 8               163     45795       82.54176                  3.184049
-## 9                48     12772       55.59035                  3.250000
-## 10               59     31060      345.13844                  3.796610
-##                          geometry
-## 1  MULTIPOLYGON (((1043380 257...
-## 2  MULTIPOLYGON (((1021394 267...
-## 3  MULTIPOLYGON (((1007191 237...
-## 4  MULTIPOLYGON (((1016265 238...
-## 5  MULTIPOLYGON (((1003791 151...
-## 6  MULTIPOLYGON (((1002259 169...
-## 7  MULTIPOLYGON (((985223.7 18...
-## 8  MULTIPOLYGON (((989083.2 15...
-## 9  MULTIPOLYGON (((1019132 179...
-## 10 MULTIPOLYGON (((1001262 237...</code></pre>
+  sf::st_transform(2263)  </code></pre>
 <pre class="r"><code>ggplot(ny_zip_sf, aes(fill = rats_per_10000)) +
   geom_sf(color = &quot;white&quot;, size = 0.1) +
   scale_fill_viridis_c(option = &quot;C&quot;) +
@@ -570,6 +492,118 @@ ggplot2::ggplot(ny_zip_sf, ggplot2::aes(fill = rats_quad)) +
   ) +
   ggplot2::theme_minimal()</code></pre>
 <p><img src="EDA_files/figure-html/map-lisa-rats-1.png" width="672" /></p>
+<pre class="r"><code># 对 violations_per_restaurant 做 Local Moran&#39;s I
+viol_lisa &lt;- spdep::localmoran(
+  ny_zip_sf$violations_per_restaurant,
+  lw,
+  zero.policy = TRUE
+)
+
+viol_lisa_df &lt;- as.data.frame(viol_lisa)
+
+ny_zip_sf &lt;- ny_zip_sf |&gt;
+  dplyr::mutate(
+    viol_I   = viol_lisa_df$Ii,
+    viol_p   = viol_lisa_df[[ncol(viol_lisa_df)]],
+    viol_mean = mean(violations_per_restaurant, na.rm = TRUE),
+    viol_centered = violations_per_restaurant - viol_mean,
+    viol_lag = spdep::lag.listw(lw, violations_per_restaurant, zero.policy = TRUE),
+
+    viol_quad = dplyr::case_when(
+      viol_centered &gt; 0 &amp; viol_lag &gt; 0 &amp; viol_p &lt;= 0.05 ~ &quot;High-High&quot;,
+      viol_centered &lt; 0 &amp; viol_lag &lt; 0 &amp; viol_p &lt;= 0.05 ~ &quot;Low-Low&quot;,
+      viol_centered &gt; 0 &amp; viol_lag &lt; 0 &amp; viol_p &lt;= 0.05 ~ &quot;High-Low&quot;,
+      viol_centered &lt; 0 &amp; viol_lag &gt; 0 &amp; viol_p &lt;= 0.05 ~ &quot;Low-High&quot;,
+      TRUE ~ &quot;Not significant&quot;
+    )
+  )</code></pre>
+<pre class="r"><code>cluster_cols &lt;- c(
+  &quot;High-High&quot;       = &quot;#b2182b&quot;,
+  &quot;Low-Low&quot;         = &quot;#2166ac&quot;,
+  &quot;High-Low&quot;        = &quot;#ef8a62&quot;,
+  &quot;Low-High&quot;        = &quot;#67a9cf&quot;,
+  &quot;Not significant&quot; = &quot;grey90&quot;
+)
+
+ggplot2::ggplot(ny_zip_sf, ggplot2::aes(fill = viol_quad)) +
+  ggplot2::geom_sf(color = &quot;white&quot;, size = 0.1) +
+  ggplot2::scale_fill_manual(values = cluster_cols) +
+  ggplot2::labs(
+    title = &quot;Local Moran&#39;s I Clusters for Violations per Restaurant&quot;,
+    fill  = &quot;Cluster&quot;
+  ) +
+  ggplot2::theme_minimal()</code></pre>
+<p><img src="EDA_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<pre class="r"><code># 1. 计算三分位 + 双变量编码
+ny_zip_sf &lt;- ny_zip_sf |&gt;
+  dplyr::mutate(
+    viol_tertile = dplyr::ntile(violations_per_restaurant, 3),
+    rats_tertile = dplyr::ntile(rats_per_10000, 3),
+    bi_code = dplyr::if_else(
+      is.na(viol_tertile) | is.na(rats_tertile),
+      NA_character_,
+      paste0(&quot;V&quot;, viol_tertile, &quot;R&quot;, rats_tertile)
+    ),
+    # 把 V1R1 ~ V3R3 映射到 1–9，方便用 cividis
+    bi_numeric = dplyr::if_else(
+      is.na(viol_tertile) | is.na(rats_tertile),
+      NA_integer_,
+      (viol_tertile - 1) * 3 + rats_tertile
+    )
+  )
+
+# 2. 9 个颜色，从 cividis 里取
+bi_cols &lt;- viridis::cividis(9)
+names(bi_cols) &lt;- as.character(1:9)
+
+# 3. 主地图
+p_map &lt;- ggplot2::ggplot(ny_zip_sf, ggplot2::aes(fill = factor(bi_numeric))) +
+  ggplot2::geom_sf(color = &quot;white&quot;, size = 0.1) +
+  ggplot2::scale_fill_manual(
+    values = bi_cols,
+    na.value = &quot;grey90&quot;,
+    guide = &quot;none&quot;
+  ) +
+  ggplot2::labs(
+    title = &quot;Bivariate Map: Rat Sightings per 10,000 × Violations per Restaurant&quot;
+  ) +
+  ggplot2::theme_minimal()
+
+# 4. 3×3 legend：横轴 Violations（低→高），纵轴 Rats（低→高）
+legend_df &lt;- tidyr::expand_grid(
+  viol_tertile = 1:3,
+  rats_tertile = 1:3
+) |&gt;
+  dplyr::mutate(
+    bi_numeric = (viol_tertile - 1) * 3 + rats_tertile,
+    x = viol_tertile,
+    y = rats_tertile
+  )
+
+p_legend &lt;- ggplot2::ggplot(legend_df, ggplot2::aes(x, y, fill = factor(bi_numeric))) +
+  ggplot2::geom_tile(color = &quot;white&quot;) +
+  ggplot2::scale_fill_manual(values = bi_cols, guide = &quot;none&quot;) +
+  ggplot2::scale_x_continuous(
+    breaks = c(1, 3),
+    labels = c(&quot;Low&quot;, &quot;High&quot;),
+    expand = c(0, 0)
+  ) +
+  ggplot2::scale_y_continuous(
+    breaks = c(1, 3),
+    labels = c(&quot;Low&quot;, &quot;High&quot;),
+    expand = c(0, 0)
+  ) +
+  ggplot2::labs(
+    x = &quot;Violations per Restaurant&quot;,
+    y = &quot;Rat Sightings per 10,000&quot;
+  ) +
+  ggplot2::coord_equal() +
+  ggplot2::theme_minimal(base_size = 9)
+
+# 4. patchwork 左右排版：右边更窄一点
+(p_map | p_legend) +
+  patchwork::plot_layout(widths = c(4, 0.8))</code></pre>
+<p><img src="EDA_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
 </div>
 
 

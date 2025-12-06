@@ -1,5 +1,5 @@
 ---
-title: "Analysis"
+title: "EDA"
 output: 
   html_document:
     theme: flatly
@@ -21,23 +21,49 @@ library(janitor)
 library(sf)
 library(tigris)
 library(spdep)
+library(viridis)
+library(patchwork)
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(plotly)
+library(knitr)
 
 options(tigris_use_cache = TRUE)
 ```
 
 
+```{r}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	warning = FALSE,
+  fig.width = 6,
+  fig.asp = .6,
+  out.width = "90%"
+)
+
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+```
+
+```
+
 ---
 
-## 第 2 步：读入 Data.Rmd 导出的合并数据
-
-在 “5. 空间分析” 下面加一个 chunk，读取你在 Data.Rmd 中导出的 `zip_year_month_merged.csv`：
+# Spatial Analysis
 
 ```{r}
 df_merged <- readr::read_csv("data/zip_year_month_merged.csv") |>
   janitor::clean_names() |>
   dplyr::mutate(zipcode = as.character(zipcode))
 
-glimpse(df_merged)
 ```
 
 
@@ -59,7 +85,6 @@ zip_df <- df_merged |>
     !is.na(violations_per_restaurant)
   )
 
-zip_df |> head()
 ```
 
 
@@ -75,7 +100,6 @@ ny_zip_sf <- ny_zcta |>
   dplyr::filter(!is.na(violations_per_restaurant)) |>
   sf::st_transform(2263)  
 
-ny_zip_sf
 ```
 
 ```{r map-rats}
@@ -158,5 +182,129 @@ ggplot2::ggplot(ny_zip_sf, ggplot2::aes(fill = rats_quad)) +
   ) +
   ggplot2::theme_minimal()
 ```
+
+```{r lisa-viol}
+# 对 violations_per_restaurant 做 Local Moran's I
+viol_lisa <- spdep::localmoran(
+  ny_zip_sf$violations_per_restaurant,
+  lw,
+  zero.policy = TRUE
+)
+
+viol_lisa_df <- as.data.frame(viol_lisa)
+
+ny_zip_sf <- ny_zip_sf |>
+  dplyr::mutate(
+    viol_I   = viol_lisa_df$Ii,
+    viol_p   = viol_lisa_df[[ncol(viol_lisa_df)]],
+    viol_mean = mean(violations_per_restaurant, na.rm = TRUE),
+    viol_centered = violations_per_restaurant - viol_mean,
+    viol_lag = spdep::lag.listw(lw, violations_per_restaurant, zero.policy = TRUE),
+
+    viol_quad = dplyr::case_when(
+      viol_centered > 0 & viol_lag > 0 & viol_p <= 0.05 ~ "High-High",
+      viol_centered < 0 & viol_lag < 0 & viol_p <= 0.05 ~ "Low-Low",
+      viol_centered > 0 & viol_lag < 0 & viol_p <= 0.05 ~ "High-Low",
+      viol_centered < 0 & viol_lag > 0 & viol_p <= 0.05 ~ "Low-High",
+      TRUE ~ "Not significant"
+    )
+  )
+```
+
+
+```{r}
+cluster_cols <- c(
+  "High-High"       = "#b2182b",
+  "Low-Low"         = "#2166ac",
+  "High-Low"        = "#ef8a62",
+  "Low-High"        = "#67a9cf",
+  "Not significant" = "grey90"
+)
+
+ggplot2::ggplot(ny_zip_sf, ggplot2::aes(fill = viol_quad)) +
+  ggplot2::geom_sf(color = "white", size = 0.1) +
+  ggplot2::scale_fill_manual(values = cluster_cols) +
+  ggplot2::labs(
+    title = "Local Moran's I Clusters for Violations per Restaurant",
+    fill  = "Cluster"
+  ) +
+  ggplot2::theme_minimal()
+```
+
+```{r}
+# 1. 计算三分位 + 双变量编码
+ny_zip_sf <- ny_zip_sf |>
+  dplyr::mutate(
+    viol_tertile = dplyr::ntile(violations_per_restaurant, 3),
+    rats_tertile = dplyr::ntile(rats_per_10000, 3),
+    bi_code = dplyr::if_else(
+      is.na(viol_tertile) | is.na(rats_tertile),
+      NA_character_,
+      paste0("V", viol_tertile, "R", rats_tertile)
+    ),
+    # 把 V1R1 ~ V3R3 映射到 1–9，方便用 cividis
+    bi_numeric = dplyr::if_else(
+      is.na(viol_tertile) | is.na(rats_tertile),
+      NA_integer_,
+      (viol_tertile - 1) * 3 + rats_tertile
+    )
+  )
+
+# 2. 9 个颜色，从 cividis 里取
+bi_cols <- viridis::cividis(9)
+names(bi_cols) <- as.character(1:9)
+
+# 3. 主地图
+p_map <- ggplot2::ggplot(ny_zip_sf, ggplot2::aes(fill = factor(bi_numeric))) +
+  ggplot2::geom_sf(color = "white", size = 0.1) +
+  ggplot2::scale_fill_manual(
+    values = bi_cols,
+    na.value = "grey90",
+    guide = "none"
+  ) +
+  ggplot2::labs(
+    title = "Bivariate Map: Rat Sightings per 10,000 × Violations per Restaurant"
+  ) +
+  ggplot2::theme_minimal()
+
+# 4. 3×3 legend：横轴 Violations（低→高），纵轴 Rats（低→高）
+legend_df <- tidyr::expand_grid(
+  viol_tertile = 1:3,
+  rats_tertile = 1:3
+) |>
+  dplyr::mutate(
+    bi_numeric = (viol_tertile - 1) * 3 + rats_tertile,
+    x = viol_tertile,
+    y = rats_tertile
+  )
+
+p_legend <- ggplot2::ggplot(legend_df, ggplot2::aes(x, y, fill = factor(bi_numeric))) +
+  ggplot2::geom_tile(color = "white") +
+  ggplot2::scale_fill_manual(values = bi_cols, guide = "none") +
+  ggplot2::scale_x_continuous(
+    breaks = c(1, 3),
+    labels = c("Low", "High"),
+    expand = c(0, 0)
+  ) +
+  ggplot2::scale_y_continuous(
+    breaks = c(1, 3),
+    labels = c("Low", "High"),
+    expand = c(0, 0)
+  ) +
+  ggplot2::labs(
+    x = "Violations per Restaurant",
+    y = "Rat Sightings per 10,000"
+  ) +
+  ggplot2::coord_equal() +
+  ggplot2::theme_minimal(base_size = 9)
+
+# 4. patchwork 左右排版：右边更窄一点
+(p_map | p_legend) +
+  patchwork::plot_layout(widths = c(4, 0.8))
+
+```
+
+
+# Temperal Analysis
 
 
