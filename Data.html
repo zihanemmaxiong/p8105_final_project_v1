@@ -767,15 +767,22 @@ df_merged &lt;- rat_filtered |&gt;
   inner_join(restaurant_filtered,
              by = c(&quot;zipcode&quot;, &quot;year&quot;, &quot;month&quot;)) |&gt;
   inner_join(ses_filtered,
-             by = &quot;zipcode&quot;)</code></pre>
+             by = &quot;zipcode&quot;)
+
+write_csv(df_merged, &quot;./data/zip_year_month_merged.csv&quot;)</code></pre>
 </div>
 <div id="merge-3-datasets-by-zipcode-x-year-x-month"
 class="section level2">
 <h2>Merge 3 datasets by zipcode x year x month</h2>
-<pre class="r"><code>write_csv(df_merged, &quot;./data/zip_year_month_merged.csv&quot;)</code></pre>
+<p>In the merged dataset, we included variables: <code>zipcode</code>,
+<code>year</code>, <code>month</code>, <code>rat_count_zip_month</code>,
+<code>violation_count_zip_month</code>,
+<code>inspection_count_zip_month</code>, <code>total_pop</code>,
+<code>poverty_rate</code>, <code>population_density</code>.</p>
 </div>
 <div id="export" class="section level2">
 <h2>Export</h2>
+<p>We exported the merged dataset as csv file zip_year_month_merged.</p>
 </div>
 </div>
 
