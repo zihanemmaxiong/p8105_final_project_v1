@@ -3,4 +3,5 @@
 .RData
 .Ruserdata
 site_libs/
+.DS_Store
 
