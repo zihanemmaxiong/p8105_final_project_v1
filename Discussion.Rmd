@@ -1,4 +1,5 @@
 ---
+title: "Discussion"
 output: 
   html_document:
     theme: flatly
@@ -78,4 +79,4 @@ The temporal and spatial disparities revealed in this study provide important gu
 
 Despite these meaningful insights, several limitations should be acknowledged. Rat sighting data rely on resident reporting, which may be influenced by behavioral factors such as pandemic-related activity changes or differential awareness across communities, introducing potential reporting bias. In addition, considering of complexicity of this study, violation rate reflects sanitation only at the restaurant level and does not account for broader environmental determinants such as street garbage systems, building age and maintenance, underground infrastructure, or transit corridors, limiting the strength of causal interpretations. Finally, while ZIP–Month aggregation facilitates spatio-temporal modeling, it may mask finer-scale variation; future work could leverage more granular geographic units to refine environmental risk assessment.
 
-
+</div>
