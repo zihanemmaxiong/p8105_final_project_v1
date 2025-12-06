@@ -7,6 +7,16 @@ output:
     code_folding: hide
     toc_float: true
 ---
+<style>
+body {
+  color: #382320 !important;    
+}
+
+h1, h2, h3, h4, h5 {
+  color: #382320 !important;   
+}
+</style>
+
 <link href="https://fonts.googleapis.com/css2?family=Kranky&display=swap" rel="stylesheet">
 
 <style>
@@ -49,6 +59,7 @@ body {
 </style>
 
 <div class="body-overlay"></div>
+
 <div class="main-container">
 
 <style>
@@ -95,3 +106,4 @@ body {
   <img src="images/About_Rat4.jpg" class="team-photo"/>
   <div class="team-name">Yue Hu (yh3823)</div>
 </div>
+
