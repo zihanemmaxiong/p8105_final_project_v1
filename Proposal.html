@@ -11,7 +11,7 @@
 
 
 
-<title>Proposal</title>
+<title>Proposal.knit</title>
 
 <script src="site_libs/header-attrs-2.29/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -33,6 +33,7 @@
 <link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
 <link href="site_libs/font-awesome-6.5.2/css/all.min.css" rel="stylesheet" />
@@ -63,6 +64,7 @@ if (window.hljs) {
 
 
 
+<link rel="stylesheet" href="styles.css" type="text/css" />
 
 
 
@@ -221,6 +223,9 @@ $(document).ready(function () {
 </style>
 
 <!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
 
 
 
@@ -324,16 +329,16 @@ div.tocify {
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
-  <a href="index.html">Home</a>
+  <a href="Home.html">Home</a>
 </li>
 <li>
-  <a href="proposal.html">Proposal</a>
+  <a href="About_us.html">About us</a>
+</li>
+<li>
+  <a href="Proposal.html">Proposal</a>
 </li>
 <li>
   <a href="report.html">Report</a>
-</li>
-<li>
-  <a href="introduction.html">Introduction</a>
 </li>
 <li>
   <a href="data.html">Data</a>
@@ -375,25 +380,90 @@ div.tocify {
 
 <div id="header">
 
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
 
 
-<h1 class="title toc-ignore">Proposal</h1>
+
 
 </div>
 
 
-<div id="group-members" class="section level3">
-<h3>Group Members</h3>
+<style>
+body {
+  color: #382320 !important;    
+}
+
+h1, h2, h3, h4, h5 {
+  color: #382320 !important;     
+}
+</style>
+<div class="body-overlay">
+
+</div>
+<div class="main-container">
+<p><link href="https://fonts.googleapis.com/css2?family=Kranky&display=swap" rel="stylesheet"></p>
+<style>
+.rat-title {
+  font-family: 'Kranky', cursive;
+  font-size: 46px;
+  font-weight: 400;
+  color: #333333;
+  letter-spacing: 1px;
+  margin-top: 10px;
+  margin-bottom: 14px;
+}
+</style>
+<style>
+body {
+  background-image: url("images/proposal_bg.jpg");
+  background-size: cover;
+  background-attachment: fixed;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 1;
+}
+
+.body-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 190%;    
+  height: 120%;   
+  background: rgba(255,255,255,0.05); 
+  z-index: -1;    
+  pointer-events: none;
+}
+
+.main-container {
+  background: rgba(255,255,255,0.75);
+  padding: 20px;
+  border-radius: 12px;
+}
+</style>
+<h1 class="rat-title">
+Project Proposal
+</h1>
+<hr />
+<div id="group-members" class="section level2">
+<h2>Group Members</h2>
 <p>Zihan Xiong (zx2527), Wanting Dong (wd2311), Hsuanyi Lee (hl3858),
 Yue Hu (yh3823)</p>
+<hr />
 </div>
-<div id="tentative-project-title" class="section level3">
-<h3>Tentative Project Title</h3>
+<div id="tentative-project-title" class="section level2">
+<h2>Tentative Project Title</h2>
 <p>What’s NYC Rats’ Favorite Restaurant? Exploring the association
 between NYC Rat Sighting Report and Restaurant Inspections Results.</p>
+<hr />
 </div>
-<div id="motivations" class="section level3">
-<h3>Motivations</h3>
+<div id="motivations" class="section level2">
+<h2>Motivations</h2>
 <p>Urban rats 🐭🍕 are remarkably adaptive and have become a persistent
 feature of New York City’s environment. NYC residents frequently report
 rodent activity in streets, subway tracks, and near restaurants, where
@@ -401,15 +471,17 @@ accumulated food waste provides an ideal habitat. Although the city
 conducts regular restaurant inspections and extensive pest-control
 efforts, rodents remain a major public health concern.</p>
 <p>This project aims to explore the</p>
-<ol style="list-style-type: lower-alpha">
-<li><p><strong>spatial</strong> (For example: do neighborhoods such as
-Chinatown, the Bronx, or Harlem simultaneously exhibit high rat-sighting
-density and high restaurant violation rates?) and</p></li>
-<li><p><strong>temporal</strong> (For example: during the summer months
-of 2022, when rat sightings surged, did the average restaurant
-inspection scores decrease?) association between two key indicators of
-urban sanitation:</p></li>
-</ol>
+<div id="spatial" class="section level3">
+<h3>1. Spatial</h3>
+<p>Do neighborhoods such as Chinatown, the Bronx, or Harlem
+simultaneously exhibit high rat-sighting density and high restaurant
+violation rates? and</p>
+</div>
+<div id="temporal" class="section level3">
+<h3>2. Temporal</h3>
+<p>During the summer months of 2022, when rat sightings surged, did the
+average restaurant inspection scores decrease?) association between two
+key indicators of urban sanitation:</p>
 <ol style="list-style-type: decimal">
 <li><p>citizen-reported rat sightings from the NYC 311 system,
 and</p></li>
@@ -422,33 +494,38 @@ and whether their trends fluctuate together over time. Understanding
 this relationship may help identify environmental or socioeconomic
 factors underlying poor sanitation, and inform targeted strategies for
 pest control and food safety monitoring in urban areas.</p>
+<hr />
 </div>
-<div id="intended-final-products" class="section level3">
-<h3>Intended Final Products</h3>
-<ol style="list-style-type: decimal">
-<li><strong>Spatial clustering analysis</strong>: Examine whether rat
-sightings are spatially co-located with neighborhoods that exhibit a
-high concentration of restaurant sanitation violations, which we will
-investigate using spatial joins and hotpots clustering analysis.</li>
-<li><strong>Temporal trend &amp; seasonality</strong>: Explore the
-extent to which seasonal temperature patterns drive increases in rat
-activity, and whether these fluctuations are subsequently followed by
-higher rates of restaurant violations; to do this, we will analyze
-seasonal trends and evaluate potential lagged correlations.</li>
-<li><strong>Category-level comparisons</strong> : Investigate whether
-certain cuisine types are more prone to pest-related violations—such as
-rodents—by comparing violation rates across cuisine categories using
-ANOVA or regression modeling.</li>
-<li><strong>Adjusted comparison</strong>: based on the cuisine
-comparison, we consider whether neighborhood-level socioeconomic
-factors, such as poverty rate or population density, mediate the
-relationship between rat sightings and restaurant sanitation outcomes,
-in order to better understand possible underlying structural
-influences.</li>
-</ol>
 </div>
-<div id="anticipated-data-source" class="section level3">
-<h3>Anticipated Data Source</h3>
+<div id="intended-final-products" class="section level2">
+<h2>Intended Final Products</h2>
+<div id="spatial-clustering-analysis" class="section level3">
+<h3>1. Spatial clustering analysis</h3>
+<p>Examine whether rat sightings are spatially co-located with
+neighborhoods that exhibit a high concentration of restaurant sanitation
+violations, which we will investigate using spatial joins and hotpots
+clustering analysis.</p>
+</div>
+<div id="temporal-trend-seasonality" class="section level3">
+<h3>2. Temporal trend &amp; seasonality</h3>
+<p>Explore the extent to which seasonal temperature patterns drive
+increases in rat activity, and whether these fluctuations are
+subsequently followed by higher rates of restaurant violations; to do
+this, we will analyze seasonal trends and evaluate potential lagged
+correlations.</p>
+</div>
+<div id="adjusted-comparison" class="section level3">
+<h3>3. Adjusted comparison</h3>
+<p>Based on the cuisine comparison, we consider whether
+neighborhood-level socioeconomic factors, such as poverty rate or
+population density, mediate the relationship between rat sightings and
+restaurant sanitation outcomes, in order to better understand possible
+underlying structural influences.</p>
+<hr />
+</div>
+</div>
+<div id="anticipated-data-source" class="section level2">
+<h2>Anticipated Data Source</h2>
 <ol style="list-style-type: decimal">
 <li>NYC 311 Rat Sightings Dataset, which mainly include incident zip
 code, street name, incident created date</li>
@@ -457,56 +534,62 @@ street, cuisine description, inspection date, score</li>
 <li>ACS 5-Year Estimates (American Community Survey)</li>
 <li>some other datasets as project going on</li>
 </ol>
+<hr />
 </div>
-<div id="planned-analyses-visualizations" class="section level3">
-<h3>Planned Analyses/ Visualizations</h3>
-<p><strong>Overall</strong> -Generate summary statistics of rat
-sightings and restaurant inspection outcomes across boroughs and years.
--Visualize overall distributions using histograms, bar charts, and
-boxplots to highlight variation among boroughs or cuisine types.
--Examine correlations between average violation scores and rat-sighting
-rates.</p>
-<ol style="list-style-type: decimal">
-<li><strong>Spatial clustering analysis</strong>:</li>
-</ol>
+<div id="planned-analyses-visualizations" class="section level2">
+<h2>Planned Analyses/ Visualizations</h2>
+<div id="overall" class="section level3">
+<h3>Overall</h3>
+<p>-Generate summary statistics of rat sightings and restaurant
+inspection outcomes across boroughs and years. -Visualize overall
+distributions using histograms, bar charts, and boxplots to highlight
+variation among boroughs or cuisine types. -Examine correlations between
+average violation scores and rat-sighting rates.</p>
+</div>
+<div id="spatial-clustering-analysis-1" class="section level3">
+<h3>1. Spatial clustering analysis</h3>
 <p>-Create interactive maps showing rat-sighting density and restaurant
 violation severity across NYC. -Conduct spatial clustering analysis
 (e.g.hotspot mapping) to identify neighborhoods where rat activity and
 violations are geographically concentrated. Overlay rat-sighting
 hotspots and restaurant violation clusters to detect co-occurrence
 zones.</p>
-<ol start="2" style="list-style-type: decimal">
-<li><strong>Temporal Trend Analysis</strong>:</li>
-</ol>
+</div>
+<div id="temporal-trend-analysis" class="section level3">
+<h3>2. Temporal Trend Analysis</h3>
 <p>-Build time-series plots of monthly or seasonal changes in
 rat-sighting counts and average inspection scores (plotly) -Explore
 seasonal patterns (e.g., summer peaks) and potential time-lag
 relationships between rat activity and sanitation outcomes.</p>
-<ol start="3" style="list-style-type: decimal">
-<li><strong>Statistical Modelling</strong> (potential?) -Conduct simple
-linear regression to analyze linearity between restaurant violation and
-rat-sighting rates. -Report coefficients, t-statistics p-values, and R
-squared to assess whether the linear relationship is statistically
-significant.</li>
-</ol>
 </div>
-<div id="coding-challenges" class="section level3">
-<h3>Coding Challenges</h3>
+<div id="statistical-modelling" class="section level3">
+<h3>3. Statistical Modelling</h3>
+<p>-Conduct simple linear regression to analyze linearity between
+restaurant violation and rat-sighting rates. -Report coefficients,
+t-statistics p-values, and R squared to assess whether the linear
+relationship is statistically significant.</p>
+<hr />
+</div>
+</div>
+<div id="coding-challenges" class="section level2">
+<h2>Coding Challenges</h2>
 <p>We anticipate to address: 1) handling the large scale NYC 311 Rat
 Sightings Dataset and NYC Restaurants Inspections Results, managing
 missing, inconsistent and unnecessary data/variables, and implement data
 analysis and visualization using R. Since the dataset is large,
 optimizing code, suitable cleaning and tidying data, reproducibility
 will be key factors to overcome these challenges.</p>
+<hr />
 </div>
-<div id="planned-timeline" class="section level3">
-<h3>Planned Timeline</h3>
+<div id="planned-timeline" class="section level2">
+<h2>Planned Timeline</h2>
 <p>November 7-15: Data Collection, cleaning and preliminary exploration.
 November 16-23: Conduct spatial clustering analysis, temporal trend
 analysis and categorical-level comparisons. November 24-28: Finalize all
 analysis and start drafting the report. November 29 - December 3:
 Complete the draft report and finalize all visualization parts. December
 3-6: Finalize and submit.</p>
+</div>
 </div>
 
 
@@ -544,6 +627,11 @@ $(document).ready(function () {
 </script>
 
 <!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
 
 <script>
 $(document).ready(function ()  {
