@@ -21,7 +21,6 @@ library(tigris)
 library(lubridate)
 ```
 
-# Data 
 
 We integrated and merged three datasets for our analysis: **Rat Sighting**, **NYC Restaurant Inspection Result**,and **ACS 2019 5-year estimates**. To ensure temporal consistency and spatial alignment across datasets, the following steps were applied.
 
