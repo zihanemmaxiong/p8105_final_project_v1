@@ -1,4 +1,5 @@
 ---
+title: "Data"
 output: 
   html_document:
     theme: flatly
@@ -424,3 +425,5 @@ In the merged dataset, we included variables: `zipcode`, `year`, `month`, `rat_c
 
 ## Export
 We exported the merged dataset as csv file zip_year_month_merged.
+
+</div>
