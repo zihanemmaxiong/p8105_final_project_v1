@@ -1,5 +1,5 @@
 ---
-title: "EDA"
+title: "Exploring Data Analysis"
 output: 
   html_document:
     theme: flatly
@@ -28,6 +28,7 @@ library(dplyr)
 library(ggplot2)
 library(plotly)
 library(knitr)
+library(kableExtra)
 
 options(tigris_use_cache = TRUE)
 ```
@@ -129,16 +130,15 @@ Overall, both outcomes show meaningful spatial structure at the ZIP level, confi
 ## Are Hotspots Really Clustering? 
 In the Local Moran’s I maps, each ZIP code is classified into one of four cluster types based on its own value and the average of its neighbors:
 
-**High–High:** ZIP codes with high values surrounded by neighbors that also have high values. These are “hotspots” of spatial clustering.
+- **High–High:** ZIP codes with high values surrounded by neighbors that also have high values. 
 
-**Low–Low:** ZIP codes with low values surrounded by low-value neighbors. These are “coldspots.”
+- **Low–Low:** ZIP codes with low values surrounded by low-value neighbors.
 
-**High–Low:** ZIP codes with high values surrounded by low-value neighbors. These are potential spatial outliers that stand out from a low-value area.
+- **High–Low:** ZIP codes with high values surrounded by low-value neighbors. These are potential spatial outliers that stand out from a low-value area.
 
-**Low–High:** ZIP codes with low values surrounded by high-value neighbors. These are the opposite type of spatial outlier.
-ZIP codes classified as “Not significant” do not show statistically significant clustering at the chosen α level.
+- **Low–High:** ZIP codes with low values surrounded by high-value neighbors. These are the opposite type of spatial outlier.
+
 ```{r lisa-weights}
-# 构建空间权重（允许存在没有邻居的 polygon）
 nb <- spdep::poly2nb(ny_zip_sf)
 lw <- spdep::nb2listw(nb, style = "W", zero.policy = TRUE)
 
@@ -146,14 +146,12 @@ lw <- spdep::nb2listw(nb, style = "W", zero.policy = TRUE)
 
 ### Local Moran’s I Clusters for Rat Sightings per 10,000 Residents
 ```{r lisa-rats}
-# 对 rats_per_10000 做 Local Moran's I
 rats_lisa <- spdep::localmoran(
   ny_zip_sf$rats_per_10000,
   lw,
   zero.policy = TRUE
 )
 
-# 转成 data.frame，方便按列名 / 位置取
 rats_lisa_df <- as.data.frame(rats_lisa)
 
 ny_zip_sf <- ny_zip_sf |>
@@ -246,18 +244,19 @@ ggplot2::ggplot(ny_zip_sf, ggplot2::aes(fill = viol_quad)) +
 
 ## Bivariate Hotspots for Rats Sighting and Violations
 ### Rat Sightings per 10,000 × Violations per Restaurant
-**Double-burden areas** (high rats, high violations):
+- **Double-burden areas** (high rats, high violations):
 Several central and northern Brooklyn ZIPs and parts of the Bronx fall into the highest category for both measures. These are neighborhoods where residents are simultaneously exposed to poor restaurant hygiene and high rodent activity. The color gradient suggests these hotspots are not isolated; similar colors extend into adjacent ZIPs, indicating a spatial diffusion pattern rather than a single problematic block.
-Low-burden areas (low rats, low violations):
+
+- **Low-burden areas** (low rats, low violations):
 Much of Staten Island and portions of eastern Queens cluster in the bottom-left part of the bivariate legend. These areas likely have lower population and restaurant density, more single-family housing, and possibly better waste management, all of which can reduce both violations and rat sightings.
-High rats, relatively low violations (rat-high / restaurant-low):
+
+- **High rats, relatively low violations** (rat-high / restaurant-low):
 Some ZIPs near double-burden hotspots show high rat sightings but only moderate or low restaurant violations. One plausible explanation is that these neighborhoods may have fewer restaurants but are adjacent to high-density commercial areas; rats can travel from nearby hotspots via connected sewers, alleys, and transit corridors, even if local restaurants are not the main driver.
-High violations, relatively low rats (restaurant-high / rat-low):
+
+- **High violations, relatively low rats** (restaurant-high / rat-low):
 In contrast, a few ZIPs with many restaurants and elevated violation rates do not yet show the highest rat complaint rates. These may be emerging risk areas where poor restaurant hygiene has not yet translated into widespread community rat complaints, or where other environmental conditions (e.g., newer building stock, less underground infrastructure, more aggressive pest control) are temporarily buffering rat populations.
-Overall interpretation:
-The bivariate map highlights a core set of neighborhoods where interventions could have the biggest impact: areas with high values for both indicators. At the same time, the presence of “mismatched” ZIPs (rat-high / restaurant-low and restaurant-high / rat-low) suggests that rodent control and food safety policies cannot focus solely on restaurants. Housing quality, waste infrastructure, and neighborhood connectivity also likely play important roles in shaping where rats thrive.
+
 ```{r}
-# 1. 计算三分位 + 双变量编码
 ny_zip_sf <- ny_zip_sf |>
   dplyr::mutate(
     viol_tertile = dplyr::ntile(violations_per_restaurant, 3),
@@ -267,7 +266,6 @@ ny_zip_sf <- ny_zip_sf |>
       NA_character_,
       paste0("V", viol_tertile, "R", rats_tertile)
     ),
-    # 把 V1R1 ~ V3R3 映射到 1–9，方便用 cividis
     bi_numeric = dplyr::if_else(
       is.na(viol_tertile) | is.na(rats_tertile),
       NA_integer_,
@@ -275,11 +273,9 @@ ny_zip_sf <- ny_zip_sf |>
     )
   )
 
-# 2. 9 个颜色，从 cividis 里取
 bi_cols <- viridis::cividis(9)
 names(bi_cols) <- as.character(1:9)
 
-# 3. 主地图
 p_map <- ggplot2::ggplot(ny_zip_sf, ggplot2::aes(fill = factor(bi_numeric))) +
   ggplot2::geom_sf(color = "white", size = 0.1) +
   ggplot2::scale_fill_manual(
@@ -292,7 +288,6 @@ p_map <- ggplot2::ggplot(ny_zip_sf, ggplot2::aes(fill = factor(bi_numeric))) +
   ) +
   ggplot2::theme_minimal()
 
-# 4. 3×3 legend：横轴 Violations（低→高），纵轴 Rats（低→高）
 legend_df <- tidyr::expand_grid(
   viol_tertile = 1:3,
   rats_tertile = 1:3
@@ -323,7 +318,6 @@ p_legend <- ggplot2::ggplot(legend_df, ggplot2::aes(x, y, fill = factor(bi_numer
   ggplot2::coord_equal() +
   ggplot2::theme_minimal(base_size = 9)
 
-# 4. patchwork 左右排版：右边更窄一点
 (p_map | p_legend) +
   patchwork::plot_layout(widths = c(4, 0.8))
 
@@ -331,7 +325,7 @@ p_legend <- ggplot2::ggplot(legend_df, ggplot2::aes(x, y, fill = factor(bi_numer
 
 
 
-## Rat Sighting Temporal Exploration
+# Rat Sighting Temporal Exploration
 
 Next, we aim to examine whether there are temporal trends in rat sighting. Specifically, we explore potential seasonal patterns as well as differences across months and years. For this analysis, we use the cleaned merged dataset at the ZIP code × year × month level.
 
@@ -463,31 +457,26 @@ plot_ly(
 
 
 
-## 1. Introduction
-
+# What Neighborhood Factors Shape Rats and Restaurant Sanitation
 This exploratory analysis uses the merged ZIP–year–month dataset to examine whether three socioeconomic variables:
-	•	poverty_rate
-	•	population_density
-	•	median_household_income
+- **poverty_rate**
+- **population_density**
+- **median_household_income**
 
 are associated with the outcome:
-	•	rat_count_zip_month
+- **rat_count_zip_month**
 
 and the exposure:
-	•	violation_rate_per_inspection = violation_count_zip_month / inspection_count_zip_month
+- **violation_rate_per_inspection = violation_count_zip_month / inspection_count_zip_month** 
 
 The goal is to determine which SES variables should be included as covariates in the final regression model.
 
 
-## 2. Import Merged Data
 ```{r load}
 dat <- read_csv("data/zip_year_month_merged.csv") %>%
   clean_names()
-
-glimpse(dat)
 ```
 
-## 3. Compute Exposure Variable
 ```{r compute-exposure}
 dat <- dat %>%
   mutate(
@@ -497,10 +486,9 @@ dat <- dat %>%
               NA_real_)
   )
 
-summary(dat$violation_rate_per_inspection)
 ```
 
-## 4. Distribution of SES Variables
+## How Exploring SES Landscapes for Rat Sighting
 ```{r ses-distribution}
 dat %>%
   select(poverty_rate, population_density, median_household_income) %>%
@@ -514,7 +502,8 @@ dat %>%
 The SES variables show substantial variation across ZIP codes in New York City. Poverty rate exhibits a right-skewed distribution, indicating that while many ZIP codes have relatively low poverty, a considerable number experience markedly higher poverty levels. Population density varies dramatically across ZIP codes, reflecting known differences between outer-borough residential zones and the densely populated core of Manhattan. Median household income shows a long right tail, as several ZIP codes include affluent neighborhoods with income levels far above the citywide median. These distributions demonstrate that SES indicators in the data contain sufficient variability to meaningfully examine their associations with rat sightings and restaurant violations.
 
 
-## 5. Correlations Between SES and Outcome/Exposure
+## Do Socioeconomic Conditions Align With Rats and Violations
+
 ```{r correlations}
 corr_data <- dat %>%
   select(
@@ -527,15 +516,45 @@ corr_data <- dat %>%
 
 cor_matrix <- cor(corr_data, use = "pairwise.complete.obs")
 
-cor_matrix
+cor_table <- cor_matrix %>%
+  round(2) %>%
+  as.data.frame() %>%
+  tibble::rownames_to_column("Variable")
+
+nice_names <- c(
+  "Variable",
+  "Rat count / month",
+  "Violations / inspection",
+  "Poverty rate",
+  "Population density",
+  "Median HH income"
+)
 ```
+
+```{r}
+cor_table %>%
+  kable(
+    caption = "Correlation matrix for rat counts, violation rates, and SES variables",
+    col.names = nice_names,
+    align = "lrrrrr"
+  ) %>%
+  kable_styling(
+    full_width = FALSE,
+    bootstrap_options = c("striped", "hover", "condensed"),
+    font_size = 12,
+    position = "center"
+  ) %>%
+  scroll_box(width = "100%", height = "300px")
+```
+
 Correlation analysis reveals meaningful relationships between SES variables and both the outcome and exposure. Rat sightings are positively correlated with poverty rate and population density, suggesting that poorer or more crowded neighborhoods tend to report more rat activity. Median household income is slightly negatively correlated with rat sightings, implying that wealthier ZIP codes generally experience fewer rat complaints.
 
 Population density exhibits the strongest positive correlation with restaurant violation rates, indicating that dense neighborhoods are more likely to have sanitation issues reflected in inspection outcomes. Poverty rate has a weak positive relationship with the violation rate, while median household income shows a weak negative association with violations.
 
 The SES variables are also correlated with each other. Poverty rate and median household income display a strong negative correlation, while population density is moderately positively correlated with poverty rate. These relationships highlight potential multicollinearity concerns if certain SES variables are included together in later multivariable models.
 
-## 6. SES vs Outcome: Rat Count
+## SES vs Outcome: Rat Count
+Who Gets the Rats? SES Gradients in Rodent Activity
 ```{r ses-vs-rats}
 ggplot(dat, aes(x = poverty_rate, y = rat_count_zip_month)) +
   geom_point(alpha = 0.4) +
@@ -558,7 +577,9 @@ ggplot(dat, aes(x = median_household_income, y = rat_count_zip_month)) +
 
 Each of the SES variables demonstrates a distinct association with rat sighting activity. ZIP codes with higher poverty rates consistently show higher rat sighting counts, which may reflect reduced infrastructure quality, fewer resources for pest control, and greater environmental stress. Population density is also positively associated with rat sightings, likely because denser regions generate greater waste and offer more food sources and nesting sites for rodents. Median household income displays a negative association with rat sightings; higher-income neighborhoods report fewer rat incidents, which may reflect better building maintenance, improved sanitation, and greater access to pest management services.
 
-## 7. SES vs Exposure: Violation Rate per Inspection
+
+## SES vs Exposure: Violation Rate per Inspection
+Which Neighborhoods Struggle With Restaurant Sanitation?
 ```{r ses-vs-exposure}
 ggplot(dat, aes(x = poverty_rate, y = violation_rate_per_inspection)) +
   geom_point(alpha = 0.4) +
@@ -578,11 +599,11 @@ ggplot(dat, aes(x = median_household_income, y = violation_rate_per_inspection))
   theme_minimal() +
   labs(title = "Violation Rate per Inspection vs Median Household Income")
 ```
-
 Population density is the SES indicator most strongly associated with the violation rate per inspection. ZIP codes with higher density tend to have higher restaurant violation rates, possibly because dense areas contain more restaurants, higher foot traffic, and environmental pressures that challenge sanitation practices. Poverty rate shows a mild positive trend with violation rates, while median household income shows a mild negative relationship, consistent with socioeconomic patterns observed in the rat sighting analysis.
 
-## 8.Summary
 
+
+## SES Predictors That Truly Matter
 This exploratory analysis demonstrates that poverty rate and population density are the two socioeconomic indicators most strongly and consistently associated with both monthly rat sighting counts and the violation rate per restaurant inspection across New York City ZIP codes from 2019 to 2024. ZIP codes with higher poverty or greater population density tend to exhibit more rat activity and higher restaurant violation burdens, highlighting these SES factors as important structural characteristics relevant to environmental conditions and sanitation outcomes.
 
 Given their clear relationships with both the outcome and exposure, and their conceptual relevance as neighborhood-level socioeconomic determinants, poverty rate and population density should be included as key covariates in the final regression model. In contrast, median household income should not be included jointly with poverty rate, as the two measures are strongly negatively correlated and would likely introduce multicollinearity, reducing the stability and interpretability of model estimates.
