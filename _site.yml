@@ -1,14 +1,14 @@
----
+
 title: "Rats and Restaurants in NYC"
 output_dir: "."
 navbar:
   right:   
     - text: "Home"
-      href: Home.html
+      href: home.html
     - text: "About us"
-      href: About_us.html
+      href: about_us.html
     - text: "Proposal"
-      href: Proposal.html
+      href: proposal.html
     - text: "Report"
       href: report.html
     - text: "Data"
@@ -31,5 +31,4 @@ navbar:
 output:
   html_document: 
     theme: flatly
-    css: styles.css 
----
+
