@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Interactive Map</title>
+
+<script src="site_libs/header-attrs-2.29/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-6.5.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html"></a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="proposal.html">Proposal</a>
+</li>
+<li>
+  <a href="report.html">Report</a>
+</li>
+<li>
+  <a href="introduction.html">Introduction</a>
+</li>
+<li>
+  <a href="data.html">Data</a>
+</li>
+<li>
+  <a href="eda.html">EDA</a>
+</li>
+<li>
+  <a href="Interactive-Map.html">Interactive Map</a>
+</li>
+<li>
+  <a href="modelling.html">Modelling</a>
+</li>
+<li>
+  <a href="discussion.html">Discussion</a>
+</li>
+<li>
+  <a href="appendix.html">Appendix</a>
+</li>
+<li>
+  <a>
+    <span class="fa fa-play-circle fa-lg"></span>
+     
+  </a>
+</li>
+<li>
+  <a href="mailto:&lt;zx2527@cumc.columbia.edu&gt;">
+    <span class="fa fa-envelope fa-lg"></span>
+     
+  </a>
+</li>
+<li>
+  <a href="https://github.com/zihanemmaxiong/p8105_final_project/tree/main">
+    <span class="fa fa-github fa-lg"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Interactive Map</h1>
+
+</div>
+
+
+<pre class="r"><code># 基本环境设置 -----------------------------------------------------------
+
+library(tidyverse)</code></pre>
+<pre><code>## ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+## ✔ dplyr     1.1.4     ✔ readr     2.1.5
+## ✔ forcats   1.0.0     ✔ stringr   1.5.2
+## ✔ ggplot2   4.0.0     ✔ tibble    3.3.0
+## ✔ lubridate 1.9.4     ✔ tidyr     1.3.1
+## ✔ purrr     1.1.0     
+## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+## ✖ dplyr::filter() masks stats::filter()
+## ✖ dplyr::lag()    masks stats::lag()
+## ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
+<pre class="r"><code>library(janitor)</code></pre>
+<pre><code>## 
+## Attaching package: &#39;janitor&#39;
+## 
+## The following objects are masked from &#39;package:stats&#39;:
+## 
+##     chisq.test, fisher.test</code></pre>
+<pre class="r"><code>library(sf)</code></pre>
+<pre><code>## Linking to GEOS 3.13.0, GDAL 3.8.5, PROJ 9.5.1; sf_use_s2() is TRUE</code></pre>
+<pre class="r"><code>library(tigris)</code></pre>
+<pre><code>## To enable caching of data, set `options(tigris_use_cache = TRUE)`
+## in your R script or .Rprofile.</code></pre>
+<pre class="r"><code>library(shiny)
+library(leaflet)
+library(viridisLite)
+
+options(tigris_use_cache = TRUE)</code></pre>
+<pre class="r"><code># 读取已经 merge 好的 ZIP × year × month 数据
+
+df_merged &lt;- readr::read_csv(&quot;data/zip_year_month_merged.csv&quot;) |&gt;
+clean_names() |&gt;
+mutate(zipcode = as.character(zipcode))</code></pre>
+<pre><code>## Rows: 12960 Columns: 10
+## ── Column specification ────────────────────────────────────────────────────────
+## Delimiter: &quot;,&quot;
+## dbl (10): zipcode, year, month, rat_count_zip_month, violation_count_zip_mon...
+## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<pre class="r"><code># 2.1 按 ZIP × 年聚合 -----------------------------------------------
+
+zip_year &lt;- df_merged |&gt;
+group_by(zipcode, year) |&gt;
+summarise(
+rat_count_year  = sum(rat_count_zip_month, na.rm = TRUE),
+violation_year  = sum(violation_count_zip_month, na.rm = TRUE),
+inspection_year = sum(inspection_count_zip_month, na.rm = TRUE),
+total_pop       = mean(total_pop, na.rm = TRUE),
+.groups = &quot;drop&quot;
+) |&gt;
+mutate(
+rats_per_10000_year = 10000 * rat_count_year / total_pop,
+viol_per_rest_year  = violation_year / inspection_year
+)
+
+# 2.2 获取 ZCTA 边界并与 ZIP 年度表合并 -----------------------------
+
+ny_zcta &lt;- zctas(state = &quot;NY&quot;, year = 2010) |&gt;
+rename(zipcode = ZCTA5CE10) |&gt;
+mutate(zipcode = as.character(zipcode))
+
+# 使用经纬度坐标 (EPSG:4326) 方便 leaflet 显示
+
+ny_zip_year_sf &lt;- ny_zcta |&gt;
+st_transform(4326) |&gt;
+left_join(zip_year, by = &quot;zipcode&quot;) |&gt;
+filter(!is.na(year))
+
+# 简单检查
+
+dplyr::glimpse(ny_zip_year_sf)</code></pre>
+<pre><code>## Rows: 1,080
+## Columns: 19
+## $ STATEFP10           &lt;chr&gt; &quot;36&quot;, &quot;36&quot;, &quot;36&quot;, &quot;36&quot;, &quot;36&quot;, &quot;36&quot;, &quot;36&quot;, &quot;36&quot;, &quot;3…
+## $ zipcode             &lt;chr&gt; &quot;10464&quot;, &quot;10464&quot;, &quot;10464&quot;, &quot;10464&quot;, &quot;10464&quot;, &quot;1046…
+## $ GEOID10             &lt;chr&gt; &quot;3610464&quot;, &quot;3610464&quot;, &quot;3610464&quot;, &quot;3610464&quot;, &quot;36104…
+## $ CLASSFP10           &lt;chr&gt; &quot;B5&quot;, &quot;B5&quot;, &quot;B5&quot;, &quot;B5&quot;, &quot;B5&quot;, &quot;B5&quot;, &quot;B5&quot;, &quot;B5&quot;, &quot;B…
+## $ MTFCC10             &lt;chr&gt; &quot;G6350&quot;, &quot;G6350&quot;, &quot;G6350&quot;, &quot;G6350&quot;, &quot;G6350&quot;, &quot;G635…
+## $ FUNCSTAT10          &lt;chr&gt; &quot;S&quot;, &quot;S&quot;, &quot;S&quot;, &quot;S&quot;, &quot;S&quot;, &quot;S&quot;, &quot;S&quot;, &quot;S&quot;, &quot;S&quot;, &quot;S&quot;, …
+## $ ALAND10             &lt;dbl&gt; 9070627, 9070627, 9070627, 9070627, 9070627, 90706…
+## $ AWATER10            &lt;dbl&gt; 236605, 236605, 236605, 236605, 236605, 236605, 39…
+## $ INTPTLAT10          &lt;chr&gt; &quot;+40.8677868&quot;, &quot;+40.8677868&quot;, &quot;+40.8677868&quot;, &quot;+40.…
+## $ INTPTLON10          &lt;chr&gt; &quot;-073.7999204&quot;, &quot;-073.7999204&quot;, &quot;-073.7999204&quot;, &quot;-…
+## $ PARTFLG10           &lt;chr&gt; &quot;N&quot;, &quot;N&quot;, &quot;N&quot;, &quot;N&quot;, &quot;N&quot;, &quot;N&quot;, &quot;N&quot;, &quot;N&quot;, &quot;N&quot;, &quot;N&quot;, …
+## $ year                &lt;dbl&gt; 2019, 2020, 2021, 2022, 2023, 2024, 2019, 2020, 20…
+## $ rat_count_year      &lt;dbl&gt; 2, 6, 10, 20, 5, 5, 31, 63, 57, 82, 62, 62, 122, 1…
+## $ violation_year      &lt;dbl&gt; 3, 0, 4, 54, 80, 75, 0, 0, 0, 81, 69, 150, 1, 0, 3…
+## $ inspection_year     &lt;dbl&gt; 2, 0, 1, 17, 23, 27, 0, 0, 0, 23, 25, 41, 1, 0, 10…
+## $ total_pop           &lt;dbl&gt; 4531, 4531, 4531, 4531, 4531, 4531, 15716, 15716, …
+## $ rats_per_10000_year &lt;dbl&gt; 4.414037, 13.242110, 22.070183, 44.140366, 11.0350…
+## $ viol_per_rest_year  &lt;dbl&gt; 1.500000, NaN, 4.000000, 3.176471, 3.478261, 2.777…
+## $ geometry            &lt;MULTIPOLYGON [°]&gt; MULTIPOLYGON (((-73.78619 4..., MULTI…</code></pre>
+<pre class="r"><code>#-----------------#
+
+# Shiny UI 部分
+
+#-----------------#
+
+ui &lt;- fluidPage(
+titlePanel(&quot;Interactive Map: Rats &amp; Violations by Year (ZIP code)&quot;),
+sidebarLayout(
+sidebarPanel(
+sliderInput(
+&quot;year&quot;,
+&quot;Select year:&quot;,
+min   = min(ny_zip_year_sf$year, na.rm = TRUE),
+max   = max(ny_zip_year_sf$year, na.rm = TRUE),
+value = min(ny_zip_year_sf$year, na.rm = TRUE),
+step  = 1,
+sep   = &quot;&quot;
+),
+tags$hr(),
+h4(&quot;Clicked ZIP summary&quot;),
+verbatimTextOutput(&quot;info&quot;)
+),
+mainPanel(
+leafletOutput(&quot;map&quot;, height = 600)
+)
+)
+)
+
+#-----------------#
+
+# Shiny server 部分
+
+#-----------------#
+
+server &lt;- function(input, output, session) {
+
+# 根据 slider 选择的年份过滤数据
+
+year_data &lt;- reactive({
+ny_zip_year_sf[ny_zip_year_sf$year == input$year, ]
+})
+
+# 用 rats_per_10000_year 设定颜色
+
+pal &lt;- colorNumeric(
+palette = &quot;cividis&quot;,
+domain  = ny_zip_year_sf$rats_per_10000_year
+)
+
+# 绘制地图
+
+output$map &lt;- renderLeaflet({
+leaflet(year_data()) |&gt;
+addTiles() |&gt;
+addPolygons(
+fillColor   = ~pal(rats_per_10000_year),
+fillOpacity = 0.8,
+color       = &quot;white&quot;,
+weight      = 0.5,
+layerId     = ~zipcode,
+label = ~paste0(
+&quot;ZIP: &quot;, zipcode,
+&quot;&lt;br&gt;Year: &quot;, year,
+&quot;&lt;br&gt;Rats / 10,000: &quot;,
+round(rats_per_10000_year, 1),
+&quot;&lt;br&gt;Viol / Restaurant: &quot;,
+round(viol_per_rest_year, 2)
+),
+labelOptions = labelOptions(direction = &quot;auto&quot;)
+) |&gt;
+addLegend(
+&quot;bottomright&quot;,
+pal    = pal,
+values = ~rats_per_10000_year,
+title  = &quot;Rats / 10,000&quot;,
+opacity = 0.8
+)
+})
+
+# 点击 polygon 后在侧边栏显示详细数值
+
+output$info &lt;- renderPrint({
+req(input$map_shape_click)
+click &lt;- input$map_shape_click
+dat &lt;- year_data() |&gt; dplyr::filter(zipcode == click$id)
+
+
+if (nrow(dat) == 0) return(NULL)
+
+list(
+  year                  = dat$year[1],
+  zipcode               = dat$zipcode[1],
+  rats_per_10000        = round(dat$rats_per_10000_year[1], 1),
+  violations_per_rest   = round(dat$viol_per_rest_year[1], 3)
+)
+
+
+})
+}
+
+# 在 Rmd 中直接运行 Shiny app
+
+shinyApp(ui, server)</code></pre>
+<div style="width: 100% ; height: 400px ; text-align: center; box-sizing: border-box; -moz-box-sizing: border-box; -webkit-box-sizing: border-box;" class="muted well">Shiny applications not supported in static R Markdown documents</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

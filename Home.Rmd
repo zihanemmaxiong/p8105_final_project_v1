@@ -7,7 +7,19 @@ output:
     code_folding: hide
     toc_float: true
 ---
+<style>
+body {
+  color: #382320 !important;    
+}
+
+h1, h2, h3, h4, h5 {
+  color: #382320 !important;    
+}
+</style>
+
+
 <div class="body-overlay"></div>
+
 <div class="main-container">
 
 <link href="https://fonts.googleapis.com/css2?family=Kranky&display=swap" rel="stylesheet">
@@ -120,7 +132,6 @@ Rats in New York are more than just a common annoyance. They’re connected to b
 ---
 
 ## Screencast
-
 
 
 <img src="images/Home9.png"
