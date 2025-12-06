@@ -424,6 +424,6 @@ write_csv(df_merged, "./data/zip_year_month_merged.csv")
 In the merged dataset, we included variables: `zipcode`, `year`, `month`, `rat_count_zip_month`, `violation_count_zip_month`, `inspection_count_zip_month`, `total_pop`, `poverty_rate`, `population_density`. 
 
 ## Export
-We exported the merged dataset as csv file zip_year_month_merged.
+We exported the merged dataset as file zip_year_month_merged.
 
 </div>
