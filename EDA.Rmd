@@ -53,9 +53,6 @@ scale_colour_discrete = scale_colour_viridis_d
 scale_fill_discrete = scale_fill_viridis_d
 ```
 
-```
-
----
 
 # Spatial Analysis
 
@@ -142,7 +139,6 @@ rats_lisa <- spdep::localmoran(
 
 # 转成 data.frame，方便按列名 / 位置取
 rats_lisa_df <- as.data.frame(rats_lisa)
-names(rats_lisa_df)   # 如果好奇可以看一下列名
 
 ny_zip_sf <- ny_zip_sf |>
   dplyr::mutate(

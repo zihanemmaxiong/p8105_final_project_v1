@@ -394,11 +394,25 @@ div.tocify {
 </div>
 
 
-<hr />
+<pre class="r"><code>knitr::opts_chunk$set(
+    echo = TRUE,
+    warning = FALSE,
+  fig.width = 6,
+  fig.asp = .6,
+  out.width = &quot;90%&quot;
+)
+
+theme_set(theme_minimal() + theme(legend.position = &quot;bottom&quot;))
+
+options(
+  ggplot2.continuous.colour = &quot;viridis&quot;,
+  ggplot2.continuous.fill = &quot;viridis&quot;
+)
+
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d</code></pre>
 <div id="spatial-analysis" class="section level1">
 <h1>Spatial Analysis</h1>
-<p>在 “5. 空间分析” 下面加一个 chunk，读取你在 Data.Rmd 中导出的
-<code>zip_year_month_merged.csv</code>：</p>
 <pre class="r"><code>df_merged &lt;- readr::read_csv(&quot;data/zip_year_month_merged.csv&quot;) |&gt;
   janitor::clean_names() |&gt;
   dplyr::mutate(zipcode = as.character(zipcode))</code></pre>
@@ -434,7 +448,7 @@ ny_zip_sf &lt;- ny_zcta |&gt;
     fill  = &quot;Rats / 10,000&quot;
   ) +
   theme_minimal()</code></pre>
-<p><img src="EDA_files/figure-html/map-rats-1.png" width="672" /></p>
+<p><img src="EDA_files/figure-html/map-rats-1.png" width="90%" /></p>
 <pre class="r"><code>ggplot(ny_zip_sf, aes(fill = violations_per_restaurant)) +
   geom_sf(color = &quot;white&quot;, size = 0.1) +
   scale_fill_viridis_c(option = &quot;C&quot;) +
@@ -443,7 +457,7 @@ ny_zip_sf &lt;- ny_zcta |&gt;
     fill  = &quot;Violations / Inspection&quot;
   ) +
   theme_minimal()</code></pre>
-<p><img src="EDA_files/figure-html/map-viol-1.png" width="672" /></p>
+<p><img src="EDA_files/figure-html/map-viol-1.png" width="90%" /></p>
 <pre class="r"><code># 构建空间权重（允许存在没有邻居的 polygon）
 nb &lt;- spdep::poly2nb(ny_zip_sf)
 lw &lt;- spdep::nb2listw(nb, style = &quot;W&quot;, zero.policy = TRUE)</code></pre>
@@ -456,10 +470,8 @@ rats_lisa &lt;- spdep::localmoran(
 
 # 转成 data.frame，方便按列名 / 位置取
 rats_lisa_df &lt;- as.data.frame(rats_lisa)
-names(rats_lisa_df)   # 如果好奇可以看一下列名</code></pre>
-<pre><code>## [1] &quot;Ii&quot;             &quot;E.Ii&quot;           &quot;Var.Ii&quot;         &quot;Z.Ii&quot;          
-## [5] &quot;Pr(z != E(Ii))&quot;</code></pre>
-<pre class="r"><code>ny_zip_sf &lt;- ny_zip_sf |&gt;
+
+ny_zip_sf &lt;- ny_zip_sf |&gt;
   dplyr::mutate(
     rats_I    = rats_lisa_df$Ii,          # 第 1 列
     rats_p    = rats_lisa_df[[ncol(rats_lisa_df)]],  # 最后一列，通常是 p-value
@@ -491,7 +503,7 @@ ggplot2::ggplot(ny_zip_sf, ggplot2::aes(fill = rats_quad)) +
     fill  = &quot;Cluster&quot;
   ) +
   ggplot2::theme_minimal()</code></pre>
-<p><img src="EDA_files/figure-html/map-lisa-rats-1.png" width="672" /></p>
+<p><img src="EDA_files/figure-html/map-lisa-rats-1.png" width="90%" /></p>
 <pre class="r"><code># 对 violations_per_restaurant 做 Local Moran&#39;s I
 viol_lisa &lt;- spdep::localmoran(
   ny_zip_sf$violations_per_restaurant,
@@ -533,7 +545,7 @@ ggplot2::ggplot(ny_zip_sf, ggplot2::aes(fill = viol_quad)) +
     fill  = &quot;Cluster&quot;
   ) +
   ggplot2::theme_minimal()</code></pre>
-<p><img src="EDA_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<p><img src="EDA_files/figure-html/unnamed-chunk-4-1.png" width="90%" /></p>
 <pre class="r"><code># 1. 计算三分位 + 双变量编码
 ny_zip_sf &lt;- ny_zip_sf |&gt;
   dplyr::mutate(
@@ -603,7 +615,10 @@ p_legend &lt;- ggplot2::ggplot(legend_df, ggplot2::aes(x, y, fill = factor(bi_nu
 # 4. patchwork 左右排版：右边更窄一点
 (p_map | p_legend) +
   patchwork::plot_layout(widths = c(4, 0.8))</code></pre>
-<p><img src="EDA_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<p><img src="EDA_files/figure-html/unnamed-chunk-5-1.png" width="90%" /></p>
+</div>
+<div id="temperal-analysis" class="section level1">
+<h1>Temperal Analysis</h1>
 </div>
 
 
