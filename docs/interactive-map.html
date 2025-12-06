@@ -11,7 +11,7 @@
 
 
 
-<title>Discussion</title>
+<title>Interactive Map</title>
 
 <script src="site_libs/header-attrs-2.29/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -33,6 +33,7 @@
 <link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
 <link href="site_libs/font-awesome-6.5.2/css/all.min.css" rel="stylesheet" />
@@ -63,7 +64,6 @@ if (window.hljs) {
 
 
 
-<link rel="stylesheet" href="styles.css" type="text/css" />
 
 
 
@@ -222,6 +222,9 @@ $(document).ready(function () {
 </style>
 
 <!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
 
 
 
@@ -325,10 +328,7 @@ div.tocify {
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
-  <a href="home.html">Home</a>
-</li>
-<li>
-  <a href="about_us.html">About us</a>
+  <a href="index.html">Home</a>
 </li>
 <li>
   <a href="proposal.html">Proposal</a>
@@ -337,10 +337,16 @@ div.tocify {
   <a href="report.html">Report</a>
 </li>
 <li>
+  <a href="introduction.html">Introduction</a>
+</li>
+<li>
   <a href="data.html">Data</a>
 </li>
 <li>
   <a href="eda.html">EDA</a>
+</li>
+<li>
+  <a href="Interactive-Map.html">Interactive Map</a>
 </li>
 <li>
   <a href="modelling.html">Modelling</a>
@@ -349,7 +355,7 @@ div.tocify {
   <a href="discussion.html">Discussion</a>
 </li>
 <li>
-  <a href="interactive_map.html">Interactive Map</a>
+  <a href="appendix.html">Appendix</a>
 </li>
 <li>
   <a>
@@ -376,131 +382,221 @@ div.tocify {
 
 <div id="header">
 
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
 
 
-<h1 class="title toc-ignore">Discussion</h1>
+
+<h1 class="title toc-ignore">Interactive Map</h1>
 
 </div>
 
 
-<style>
-body {
-  color: #382320 !important;    
+<pre class="r"><code># 基本环境设置 -----------------------------------------------------------
+
+library(tidyverse)</code></pre>
+<pre><code>## ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+## ✔ dplyr     1.1.4     ✔ readr     2.1.5
+## ✔ forcats   1.0.0     ✔ stringr   1.5.2
+## ✔ ggplot2   4.0.0     ✔ tibble    3.3.0
+## ✔ lubridate 1.9.4     ✔ tidyr     1.3.1
+## ✔ purrr     1.1.0     
+## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+## ✖ dplyr::filter() masks stats::filter()
+## ✖ dplyr::lag()    masks stats::lag()
+## ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
+<pre class="r"><code>library(janitor)</code></pre>
+<pre><code>## 
+## Attaching package: &#39;janitor&#39;
+## 
+## The following objects are masked from &#39;package:stats&#39;:
+## 
+##     chisq.test, fisher.test</code></pre>
+<pre class="r"><code>library(sf)</code></pre>
+<pre><code>## Linking to GEOS 3.13.0, GDAL 3.8.5, PROJ 9.5.1; sf_use_s2() is TRUE</code></pre>
+<pre class="r"><code>library(tigris)</code></pre>
+<pre><code>## To enable caching of data, set `options(tigris_use_cache = TRUE)`
+## in your R script or .Rprofile.</code></pre>
+<pre class="r"><code>library(shiny)
+library(leaflet)
+library(viridisLite)
+
+options(tigris_use_cache = TRUE)</code></pre>
+<pre class="r"><code># 读取已经 merge 好的 ZIP × year × month 数据
+
+df_merged &lt;- readr::read_csv(&quot;data/zip_year_month_merged.csv&quot;) |&gt;
+clean_names() |&gt;
+mutate(zipcode = as.character(zipcode))</code></pre>
+<pre><code>## Rows: 12960 Columns: 10
+## ── Column specification ────────────────────────────────────────────────────────
+## Delimiter: &quot;,&quot;
+## dbl (10): zipcode, year, month, rat_count_zip_month, violation_count_zip_mon...
+## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<pre class="r"><code># 2.1 按 ZIP × 年聚合 -----------------------------------------------
+
+zip_year &lt;- df_merged |&gt;
+group_by(zipcode, year) |&gt;
+summarise(
+rat_count_year  = sum(rat_count_zip_month, na.rm = TRUE),
+violation_year  = sum(violation_count_zip_month, na.rm = TRUE),
+inspection_year = sum(inspection_count_zip_month, na.rm = TRUE),
+total_pop       = mean(total_pop, na.rm = TRUE),
+.groups = &quot;drop&quot;
+) |&gt;
+mutate(
+rats_per_10000_year = 10000 * rat_count_year / total_pop,
+viol_per_rest_year  = violation_year / inspection_year
+)
+
+# 2.2 获取 ZCTA 边界并与 ZIP 年度表合并 -----------------------------
+
+ny_zcta &lt;- zctas(state = &quot;NY&quot;, year = 2010) |&gt;
+rename(zipcode = ZCTA5CE10) |&gt;
+mutate(zipcode = as.character(zipcode))
+
+# 使用经纬度坐标 (EPSG:4326) 方便 leaflet 显示
+
+ny_zip_year_sf &lt;- ny_zcta |&gt;
+st_transform(4326) |&gt;
+left_join(zip_year, by = &quot;zipcode&quot;) |&gt;
+filter(!is.na(year))
+
+# 简单检查
+
+dplyr::glimpse(ny_zip_year_sf)</code></pre>
+<pre><code>## Rows: 1,080
+## Columns: 19
+## $ STATEFP10           &lt;chr&gt; &quot;36&quot;, &quot;36&quot;, &quot;36&quot;, &quot;36&quot;, &quot;36&quot;, &quot;36&quot;, &quot;36&quot;, &quot;36&quot;, &quot;3…
+## $ zipcode             &lt;chr&gt; &quot;10464&quot;, &quot;10464&quot;, &quot;10464&quot;, &quot;10464&quot;, &quot;10464&quot;, &quot;1046…
+## $ GEOID10             &lt;chr&gt; &quot;3610464&quot;, &quot;3610464&quot;, &quot;3610464&quot;, &quot;3610464&quot;, &quot;36104…
+## $ CLASSFP10           &lt;chr&gt; &quot;B5&quot;, &quot;B5&quot;, &quot;B5&quot;, &quot;B5&quot;, &quot;B5&quot;, &quot;B5&quot;, &quot;B5&quot;, &quot;B5&quot;, &quot;B…
+## $ MTFCC10             &lt;chr&gt; &quot;G6350&quot;, &quot;G6350&quot;, &quot;G6350&quot;, &quot;G6350&quot;, &quot;G6350&quot;, &quot;G635…
+## $ FUNCSTAT10          &lt;chr&gt; &quot;S&quot;, &quot;S&quot;, &quot;S&quot;, &quot;S&quot;, &quot;S&quot;, &quot;S&quot;, &quot;S&quot;, &quot;S&quot;, &quot;S&quot;, &quot;S&quot;, …
+## $ ALAND10             &lt;dbl&gt; 9070627, 9070627, 9070627, 9070627, 9070627, 90706…
+## $ AWATER10            &lt;dbl&gt; 236605, 236605, 236605, 236605, 236605, 236605, 39…
+## $ INTPTLAT10          &lt;chr&gt; &quot;+40.8677868&quot;, &quot;+40.8677868&quot;, &quot;+40.8677868&quot;, &quot;+40.…
+## $ INTPTLON10          &lt;chr&gt; &quot;-073.7999204&quot;, &quot;-073.7999204&quot;, &quot;-073.7999204&quot;, &quot;-…
+## $ PARTFLG10           &lt;chr&gt; &quot;N&quot;, &quot;N&quot;, &quot;N&quot;, &quot;N&quot;, &quot;N&quot;, &quot;N&quot;, &quot;N&quot;, &quot;N&quot;, &quot;N&quot;, &quot;N&quot;, …
+## $ year                &lt;dbl&gt; 2019, 2020, 2021, 2022, 2023, 2024, 2019, 2020, 20…
+## $ rat_count_year      &lt;dbl&gt; 2, 6, 10, 20, 5, 5, 31, 63, 57, 82, 62, 62, 122, 1…
+## $ violation_year      &lt;dbl&gt; 3, 0, 4, 54, 80, 75, 0, 0, 0, 81, 69, 150, 1, 0, 3…
+## $ inspection_year     &lt;dbl&gt; 2, 0, 1, 17, 23, 27, 0, 0, 0, 23, 25, 41, 1, 0, 10…
+## $ total_pop           &lt;dbl&gt; 4531, 4531, 4531, 4531, 4531, 4531, 15716, 15716, …
+## $ rats_per_10000_year &lt;dbl&gt; 4.414037, 13.242110, 22.070183, 44.140366, 11.0350…
+## $ viol_per_rest_year  &lt;dbl&gt; 1.500000, NaN, 4.000000, 3.176471, 3.478261, 2.777…
+## $ geometry            &lt;MULTIPOLYGON [°]&gt; MULTIPOLYGON (((-73.78619 4..., MULTI…</code></pre>
+<pre class="r"><code>#-----------------#
+
+# Shiny UI 部分
+
+#-----------------#
+
+ui &lt;- fluidPage(
+titlePanel(&quot;Interactive Map: Rats &amp; Violations by Year (ZIP code)&quot;),
+sidebarLayout(
+sidebarPanel(
+sliderInput(
+&quot;year&quot;,
+&quot;Select year:&quot;,
+min   = min(ny_zip_year_sf$year, na.rm = TRUE),
+max   = max(ny_zip_year_sf$year, na.rm = TRUE),
+value = min(ny_zip_year_sf$year, na.rm = TRUE),
+step  = 1,
+sep   = &quot;&quot;
+),
+tags$hr(),
+h4(&quot;Clicked ZIP summary&quot;),
+verbatimTextOutput(&quot;info&quot;)
+),
+mainPanel(
+leafletOutput(&quot;map&quot;, height = 600)
+)
+)
+)
+
+#-----------------#
+
+# Shiny server 部分
+
+#-----------------#
+
+server &lt;- function(input, output, session) {
+
+# 根据 slider 选择的年份过滤数据
+
+year_data &lt;- reactive({
+ny_zip_year_sf[ny_zip_year_sf$year == input$year, ]
+})
+
+# 用 rats_per_10000_year 设定颜色
+
+pal &lt;- colorNumeric(
+palette = &quot;cividis&quot;,
+domain  = ny_zip_year_sf$rats_per_10000_year
+)
+
+# 绘制地图
+
+output$map &lt;- renderLeaflet({
+leaflet(year_data()) |&gt;
+addTiles() |&gt;
+addPolygons(
+fillColor   = ~pal(rats_per_10000_year),
+fillOpacity = 0.8,
+color       = &quot;white&quot;,
+weight      = 0.5,
+layerId     = ~zipcode,
+label = ~paste0(
+&quot;ZIP: &quot;, zipcode,
+&quot;&lt;br&gt;Year: &quot;, year,
+&quot;&lt;br&gt;Rats / 10,000: &quot;,
+round(rats_per_10000_year, 1),
+&quot;&lt;br&gt;Viol / Restaurant: &quot;,
+round(viol_per_rest_year, 2)
+),
+labelOptions = labelOptions(direction = &quot;auto&quot;)
+) |&gt;
+addLegend(
+&quot;bottomright&quot;,
+pal    = pal,
+values = ~rats_per_10000_year,
+title  = &quot;Rats / 10,000&quot;,
+opacity = 0.8
+)
+})
+
+# 点击 polygon 后在侧边栏显示详细数值
+
+output$info &lt;- renderPrint({
+req(input$map_shape_click)
+click &lt;- input$map_shape_click
+dat &lt;- year_data() |&gt; dplyr::filter(zipcode == click$id)
+
+
+if (nrow(dat) == 0) return(NULL)
+
+list(
+  year                  = dat$year[1],
+  zipcode               = dat$zipcode[1],
+  rats_per_10000        = round(dat$rats_per_10000_year[1], 1),
+  violations_per_rest   = round(dat$viol_per_rest_year[1], 3)
+)
+
+
+})
 }
 
-h1, h2, h3, h4, h5 {
-  color: #382320 !important;     
-}
-</style>
-<div class="body-overlay">
+# 在 Rmd 中直接运行 Shiny app
 
-</div>
-<div class="main-container">
-<p><link href="https://fonts.googleapis.com/css2?family=Kranky&display=swap" rel="stylesheet"></p>
-<style>
-.rat-title {
-  font-family: 'Kranky', cursive;
-  font-size: 46px;
-  font-weight: 400;
-  color: #333333;
-  letter-spacing: 1px;
-  margin-top: 10px;
-  margin-bottom: 14px;
-}
-</style>
-<style>
-body {
-  background-image: url("images/proposal_bg.jpg");
-  background-size: cover;
-  background-attachment: fixed;
-  background-position: center;
-  background-repeat: no-repeat;
-  opacity: 1;
-}
-
-.body-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 190%;    
-  height: 120%;   
-  background: rgba(255,255,255,0.05); 
-  z-index: -1;    
-  pointer-events: none;
-}
-
-.main-container {
-  background: rgba(255,255,255,0.75);
-  padding: 20px;
-  border-radius: 12px;
-}
-</style>
-<h1 class="rat-title">
-Discussion
-</h1>
-<hr />
-<p>In this study, we integrated New York City rat sighting reports with
-restaurant inspection results to investigate the potential association
-between neighborhood-level restaurant sanitation and rat activity. Our
-results indicate that monthly rat sightings exhibit a clear seasonal
-pattern—peaking in warmer months—and show a sustained upward trend in
-the post-pandemic period. In contrast, restaurant violation rates remain
-relatively stable over time with smaller fluctuations. This suggests
-that restaurant sanitation likely represents only one contributing risk
-component.</p>
-<p>Moreover, we observed that the spatial distributions of rat sightings
-and restaurant violation rates only partially overlap. Some
-neighborhoods experience high violation rates without the highest rat
-activity, while others show substantial rat problems despite relatively
-low violation rates. These findings suggest that rat infestations are
-shaped by a more complex interplay of factors—such as population
-density, poverty burden, aging housing stock, and urban
-infrastructure—beyond restaurant sanitation alone. In addition, the
-detection of clear hotspot clusters indicates potential spatial
-spillover of environmental health risks across neighboring ZIP
-codes.</p>
-<p>Further modeling analyses revealed that the best model - lagged
-(one-month) restaurant violation rate is a statistically significant
-predictor of rat sightings. This supports a plausible mechanism: poorer
-sanitation and improper waste handling in restaurants may create more
-favorable food and habitat conditions for rats, leading to increased
-activity and sightings in the following month. Additionally,
-socioeconomic characteristics—such as neighborhood poverty levels and
-population density—were also significantly associated with rat activity,
-indicating underlying structural disparities across communities. These
-findings highlight that rat problems are closely tied not only to local
-sanitation management but also to broader dimensions of urban
-infrastructure and public health equity.</p>
-<p>The temporal and spatial disparities revealed in this study provide
-important guidance for urban rodent control strategies. First, the sharp
-seasonal rise in rat activity during summer suggests that the city
-should reinforce waste management and inspection efforts in advance of
-high-risk months, particularly within hotspot ZIP codes. Second, the
-observed lagged association between restaurant violation rates and rat
-sightings highlights the value of coordinated environmental health
-governance—strengthening food sanitation enforcement and improving waste
-handling practices may help reduce subsequent rodent exposure risks.
-Furthermore, the socioeconomic patterns observed indicate that rat
-burdens are disproportionately concentrated in resource-limited
-communities, underscoring the need to incorporate health equity
-considerations into municipal pest-control planning.</p>
-<div id="limitations" class="section level2">
-<h2>Limitations</h2>
-<p>Despite these meaningful insights, several limitations should be
-acknowledged. Rat sighting data rely on resident reporting, which may be
-influenced by behavioral factors such as pandemic-related activity
-changes or differential awareness across communities, introducing
-potential reporting bias. In addition, considering of complexicity of
-this study, violation rate reflects sanitation only at the restaurant
-level and does not account for broader environmental determinants such
-as street garbage systems, building age and maintenance, underground
-infrastructure, or transit corridors, limiting the strength of causal
-interpretations. Finally, while ZIP–Month aggregation facilitates
-spatio-temporal modeling, it may mask finer-scale variation; future work
-could leverage more granular geographic units to refine environmental
-risk assessment.</p>
-</div>
-</div>
+shinyApp(ui, server)</code></pre>
+<div style="width: 100% ; height: 400px ; text-align: center; box-sizing: border-box; -moz-box-sizing: border-box; -webkit-box-sizing: border-box;" class="muted well">Shiny applications not supported in static R Markdown documents</div>
 
 
 
@@ -537,6 +633,11 @@ $(document).ready(function () {
 </script>
 
 <!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
 
 <script>
 $(document).ready(function ()  {
